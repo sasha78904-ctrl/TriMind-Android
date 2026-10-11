@@ -20,6 +20,19 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
+      - name: Check embedded JavaScript syntax
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          html = Path("app/src/main/assets/index.html").read_text()
+          scripts = re.findall(r"<script\b[^>]*>(.*?)</script>", html, flags=re.S | re.I)
+          scripts = [s for s in scripts if s.strip()]
+          if not scripts:
+              raise SystemExit("Inline JavaScript missing")
+          Path("/tmp/trimind-script.js").write_text(scripts[-1])
+          PY
+          node --check /tmp/trimind-script.js
       - name: Install Android SDK packages
         run: |
           SDKMANAGER="$(find "$ANDROID_HOME/cmdline-tools" -type f -name sdkmanager | head -n 1)"
