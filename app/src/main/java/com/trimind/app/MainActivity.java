@@ -112,7 +112,7 @@ public final class MainActivity extends Activity {
         openModel = addField(root, "Модель OpenAI",
                 options.getString("open_model", "gpt-4.1-mini"), false);
         geminiModel = addField(root, "Модель Gemini",
-                options.getString("gemini_model", "gemini-2.5-flash"), false);
+                migratedGeminiModel(), false);
         claudeModel = addField(root, "Модель Claude",
                 options.getString("claude_model", "claude-sonnet-4-5-20250929"), false);
 
@@ -152,6 +152,12 @@ public final class MainActivity extends Activity {
         }
         root.addView(input, new LinearLayout.LayoutParams(-1, -2));
         return input;
+    }
+
+    private String migratedGeminiModel() {
+        String configured = options.getString("gemini_model", "gemini-3.8-flash");
+        if ("gemini-2.5-flash".equals(configured)) return "gemini-3.8-flash";
+        return configured;
     }
 
     private void save() {
@@ -219,25 +225,36 @@ public final class MainActivity extends Activity {
 
             int successful = (open.ok ? 1 : 0) + (gemini.ok ? 1 : 0) + (claude.ok ? 1 : 0);
             String conclusion;
+            String openReply = open.ok ? open.content : "";
+            String geminiReply = gemini.ok ? gemini.content : "";
+            String claudeReply = claude.ok ? claude.content : "";
             if (successful == 0) {
                 conclusion = "Не вдалося отримати жодної відповіді. Перевір API-ключі, моделі, "
                         + "інтернет і доступний баланс у провайдерів.";
-            } else if (oa.isEmpty()) {
-                conclusion = "Для автоматичного спільного висновку додай API-ключ OpenAI. "
-                        + "Успішні окремі відповіді доступні нижче.";
+            } else if (successful == 1) {
+                String name = open.ok ? "ChatGPT" : gemini.ok ? "Gemini" : "Claude";
+                String response = open.ok ? openReply : gemini.ok ? geminiReply : claudeReply;
+                conclusion = "Відповів лише " + name + " (1 з 3). Це окрема відповідь, "
+                        + "а не спільне рішення трьох ШІ.\n\n" + response;
             } else {
+                String provider = open.ok ? "OpenAI" : gemini.ok ? "Gemini" : "Claude";
                 try {
-                    conclusion = AiClient.synthesize(oa, om, prompt,
-                            open.ok ? open.content : "",
-                            gemini.ok ? gemini.content : "",
-                            claude.ok ? claude.content : "");
-                    if (successful < 3) {
-                        conclusion = "Увага: відповіли лише " + successful
-                                + " з 3 ШІ.\n\n" + conclusion;
+                    if (open.ok) {
+                        conclusion = AiClient.synthesize(oa, om, prompt,
+                                openReply, geminiReply, claudeReply);
+                    } else if (gemini.ok) {
+                        conclusion = AiClient.synthesizeWithGemini(ge, gm, prompt,
+                                openReply, geminiReply, claudeReply);
+                    } else {
+                        conclusion = AiClient.synthesizeWithClaude(cl, cm, prompt,
+                                openReply, geminiReply, claudeReply);
                     }
+                    conclusion = "Відповіли " + successful + " з 3 ШІ. Підсумок сформував "
+                            + provider + ".\n\n" + conclusion;
                 } catch (Exception e) {
-                    conclusion = "Не вдалося створити підсумок: " + safe(e)
-                            + "\n\nОкремі відповіді доступні нижче.";
+                    conclusion = "Відповіли " + successful + " з 3 ШІ, проте "
+                            + "автоматичний порівняльний аналіз не вдалося створити: "
+                            + safe(e) + "\n\nОкремі відповіді доступні нижче.";
                 }
             }
             final String finalConclusion = conclusion;
