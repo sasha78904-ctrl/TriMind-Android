@@ -359,7 +359,7 @@ async function createSummary(question,entries){
   badge='0 із 3 · немає відповіді';
  }else if(entries.length===1){
   summary='Це лише одна відповідь від '+entries[0].provider+
-    '. Незалежної перевірки двома іншими системами немає.\\n\\n'+entries[0].text;
+    '. Незалежної перевірки двома іншими системами немає.\n\n'+entries[0].text;
   badge='1 із 3 · не консенсус';
  }else{
   badge=entries.length+' із 3 · порівняння';
@@ -376,7 +376,7 @@ async function createSummary(question,entries){
   }
   if(!summary){
    summary='Відповіді '+entries.length+' моделей отримані, але додатковий підсумковий запит не вдався: '+
-     lastSynthError+'\\n\\nЦе НЕ зведений висновок. Нижче доступні вихідні відповіді для ручного порівняння.';
+     lastSynthError+'\n\nЦе НЕ зведений висновок. Нижче доступні вихідні відповіді для ручного порівняння.';
    badge='Не вдалося узгодити';
   }
  }
