@@ -12,6 +12,7 @@ import android.os.Bundle;
 import android.view.ViewGroup;
 import android.webkit.CookieManager;
 import android.webkit.JavascriptInterface;
+import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
@@ -34,6 +35,8 @@ public class PuterActivity extends Activity {
     private WebView view;
     private Dialog popup;
     private WebView popupView;
+    private ValueCallback<Uri[]> uploadCallback;
+    private static final int FILE_PICKER_REQUEST = 3092;
     private static final String ORIGIN = "https://trimind.local/";
     private static final String[] SAFE_LINK_SCHEMES = {"https", "http"};
 
@@ -72,7 +75,9 @@ public class PuterActivity extends Activity {
         settings.setSupportMultipleWindows(true);
         settings.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
         settings.setAllowFileAccess(false);
-        settings.setAllowContentAccess(false);
+        // Required so Chromium can read user-selected content:// URIs from Android's document picker.
+        // The app never grants blanket storage access.
+        settings.setAllowContentAccess(true);
         settings.setMediaPlaybackRequiresUserGesture(true);
         settings.setDefaultTextEncodingName("UTF-8");
         CookieManager.getInstance().setAcceptCookie(true);
@@ -97,6 +102,36 @@ public class PuterActivity extends Activity {
             }
         });
         web.setWebChromeClient(new WebChromeClient() {
+            @Override public boolean onShowFileChooser(WebView webView,
+                    ValueCallback<Uri[]> filePathCallback, FileChooserParams params) {
+                if (uploadCallback != null) uploadCallback.onReceiveValue(null);
+                uploadCallback = filePathCallback;
+                Intent picker = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+                picker.addCategory(Intent.CATEGORY_OPENABLE);
+                picker.setType("*/*");
+                picker.putExtra(Intent.EXTRA_ALLOW_MULTIPLE,
+                        params.getMode() == FileChooserParams.MODE_OPEN_MULTIPLE);
+                picker.putExtra(Intent.EXTRA_MIME_TYPES, new String[]{
+                        "image/jpeg", "image/png", "image/webp",
+                        "application/pdf", "text/plain", "text/csv",
+                        "application/json",
+                        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                        "application/msword", "application/vnd.ms-excel",
+                        "application/octet-stream"
+                });
+                picker.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                try {
+                    startActivityForResult(Intent.createChooser(picker,
+                            "Оберіть фото або документ"), FILE_PICKER_REQUEST);
+                } catch (Exception error) {
+                    uploadCallback = null;
+                    filePathCallback.onReceiveValue(null);
+                    Toast.makeText(PuterActivity.this, "Не знайдено програму для вибору файлів",
+                            Toast.LENGTH_LONG).show();
+                }
+                return true;
+            }
             @Override public boolean onCreateWindow(WebView parent, boolean isDialog,
                                                     boolean isUserGesture,
                                                     android.os.Message resultMsg) {
@@ -126,6 +161,31 @@ public class PuterActivity extends Activity {
                 if (popup != null) popup.dismiss();
             }
         });
+    }
+
+    @Override protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode != FILE_PICKER_REQUEST) return;
+        ValueCallback<Uri[]> callback = uploadCallback;
+        uploadCallback = null;
+        if (callback == null) return;
+        if (resultCode != RESULT_OK || data == null) {
+            callback.onReceiveValue(null);
+            return;
+        }
+        java.util.ArrayList<Uri> selected = new java.util.ArrayList<>();
+        ClipData clips = data.getClipData();
+        if (clips != null) {
+            for (int i=0;i<clips.getItemCount() && i<5;i++) {
+                Uri candidate = clips.getItemAt(i).getUri();
+                if (candidate != null && "content".equals(candidate.getScheme()))
+                    selected.add(candidate);
+            }
+        } else if (data.getData() != null) {
+            Uri candidate = data.getData();
+            if ("content".equals(candidate.getScheme())) selected.add(candidate);
+        }
+        callback.onReceiveValue(selected.isEmpty() ? null : selected.toArray(new Uri[0]));
     }
 
     private void configurePopup(WebView child) {
@@ -183,6 +243,10 @@ public class PuterActivity extends Activity {
     }
 
     @Override protected void onDestroy() {
+        if (uploadCallback != null) {
+            uploadCallback.onReceiveValue(null);
+            uploadCallback = null;
+        }
         if (popup != null) popup.dismiss();
         if (view != null) {
             view.stopLoading();
