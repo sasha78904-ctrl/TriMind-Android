@@ -51,6 +51,15 @@ button.ghost{padding:8px;font-size:12px}
 .dot.busy{background:#f4b544}
 .provider{margin-top:10px}
 .provider .answer{max-height:510px;overflow:auto}
+#attachmentInput{position:absolute;left:-9999px;width:1px;height:1px;opacity:0}
+.attachmentRow{display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin:9px 0}
+.attachmentRow button{flex:1;min-width:125px}
+.attachmentPreview{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0}
+.attachment{border:1px solid #dce4f2;border-radius:12px;background:#f8faff;padding:8px;max-width:155px;overflow:hidden}
+.attachment img{display:block;max-width:136px;height:90px;object-fit:cover;border-radius:8px;margin-bottom:6px}
+.attachmentName{font-size:12px;overflow-wrap:anywhere;word-break:break-word;line-height:1.35}
+.attachment button{font-size:12px;padding:5px 10px;margin-top:6px}
+
 .answer>div{min-height:1.25em}
 .answer>div.heading{font-weight:750;font-size:1.08em;margin-top:7px}
 .answer code{font-size:.9em;background:#eef3fb;border-radius:4px;padding:1px 4px}
@@ -82,7 +91,15 @@ details summary{font-weight:700;cursor:pointer;padding:7px 0}
  </section>
  <section class="card">
   <h2>Постав завдання</h2>
-  <textarea id="prompt" placeholder="Наприклад: порівняй законні способи перевезення сім’ї до Чехії. Вкажи відмінності в джерелах і те, що треба перевірити."></textarea>
+  <textarea id="prompt" placeholder="Наприклад: перевір це фото несправності або поясни завантажений PDF-документ."></textarea>
+  <div class="attachmentRow">
+   <button type="button" class="secondary" id="addPhoto">📷 Фото з галереї</button>
+   <button type="button" class="secondary" id="addFile">📎 Додати документ</button>
+  </div>
+  <input type="file" id="attachmentInput" multiple accept="image/jpeg,image/png,image/webp,application/pdf,.pdf,.doc,.docx,.xls,.xlsx,.txt,.csv,.json,.md">
+  <div id="attachmentPreview" class="attachmentPreview"></div>
+  <p id="attachmentHint" class="muted small">Фото: JPG, PNG, WebP. Документи: PDF, Word, Excel, TXT, CSV, JSON, MD. До 4 файлів, максимум 15 МБ кожен та 25 МБ разом.</p>
+  <p class="muted small">Вкладення передаються через Puter до моделей ШІ. Документи тимчасово розміщуються у твоєму сховищі Puter і видаляються після аналізу (за можливості). Файли не додаються до історії на телефоні.</p>
   <div class="inline">
    <label for="quality">Режим аналізу</label>
    <select id="quality"><option value="economy">Збалансований · дешевші моделі</option><option value="quality">Глибокий · дорожчі моделі</option></select>
@@ -156,6 +173,7 @@ const CANDIDATES={
   anthropic:['claude-sonnet-5','claude-sonnet-4-6','claude-fable-5']
  }};
 let active=false, results={}, history=[], modelCatalog=null, latest=null;
+let attachments=[], lastRunFiles=[], lastRunAt=null;
 try{ history=JSON.parse(localStorage.getItem('trimind_history_v2')||'[]');if(!Array.isArray(history))history=[];}catch(e){}
 try{$('quality').value=localStorage.getItem('trimind_quality')||'economy';}catch(e){}
 const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
@@ -283,6 +301,88 @@ function modelList(provider){
  }
  return selected.slice(0,5);
 }
+
+const FILE_LIMIT=4, MAX_FILE_BYTES=15*1024*1024, MAX_TOTAL_BYTES=25*1024*1024;
+const EXTENSIONS=/\.(jpe?g|png|webp|pdf|doc|docx|xls|xlsx|txt|csv|json|md)$/i;
+const isImage=file=>/^image\/(jpeg|png|webp)$/i.test(file.type||'')||/\.(jpg|jpeg|png|webp)$/i.test(file.name||'');
+const fileKind=file=>isImage(file)?'Фото':'Документ';
+function fileValid(file){
+ if(!file||!EXTENSIONS.test(file.name||''))return 'Цей формат не підтримується: '+(file&&file.name||'невідомий');
+ if(!Number.isFinite(file.size)||file.size<1)return 'Файл порожній або його розмір невідомий: '+file.name;
+ if(file.size>MAX_FILE_BYTES)return 'Файл завеликий (понад 15 МБ): '+file.name;
+ return '';
+}
+function addAttachments(files){
+ if(active){alert('Дочекайся завершення аналізу.');return;}
+ const incoming=Array.from(files||[]);
+ for(const file of incoming){
+  const error=fileValid(file);
+  if(error){alert(error);continue;}
+  if(attachments.length>=FILE_LIMIT){alert('Можна додати щонайбільше 4 файли.');break;}
+  if(attachments.some(item=>item.file.name===file.name&&item.file.size===file.size&&item.file.lastModified===file.lastModified))continue;
+  const bytes=attachments.reduce((sum,item)=>sum+item.file.size,0)+file.size;
+  if(bytes>MAX_TOTAL_BYTES){alert('Загальний розмір вкладень не може перевищувати 25 МБ.');break;}
+  const url=isImage(file)?URL.createObjectURL(file):null;
+  attachments.push({file,url});
+ }
+ renderAttachments();
+}
+function renderAttachments(){
+ const target=$('attachmentPreview');
+ target.replaceChildren();
+ for(const [index,item] of attachments.entries()){
+  const wrap=document.createElement('div');wrap.className='attachment';
+  if(item.url){
+   const image=document.createElement('img');image.src=item.url;image.alt='Мініатюра '+item.file.name;wrap.appendChild(image);
+  }
+  const title=document.createElement('div');title.className='attachmentName';
+  title.textContent=item.file.name+' · '+Math.max(1,Math.round(item.file.size/1024))+' КБ';
+  wrap.appendChild(title);
+  const remove=document.createElement('button');remove.type='button';remove.textContent='Прибрати';
+  remove.addEventListener('click',()=>removeAttachment(index));
+  wrap.appendChild(remove);target.appendChild(wrap);
+ }
+}
+function removeAttachment(index){
+ if(active)return;
+ const item=attachments.splice(index,1)[0];
+ if(item&&item.url)URL.revokeObjectURL(item.url);
+ renderAttachments();
+}
+async function prepareAttachments(files){
+ if(!files||!files.length)return null;
+ if(files.length===1&&isImage(files[0]))return {type:'image',file:files[0],names:[files[0].name]};
+ if(!puter.fs||typeof puter.fs.write!=='function')throw Error('Ця версія Puter не підтримує передавання документів.');
+ const ctx={type:'files',paths:[],names:files.map(f=>f.name)};
+ try{
+  for(const [index,file] of files.entries()){
+   const ext=(file.name.match(/\.([a-z0-9]+)$/i)||[])[1]||'dat';
+   const remote='trimind_'+Date.now()+'_'+index+'_'+Math.random().toString(36).slice(2,10)+'.'+ext.toLowerCase();
+   const uploaded=await puter.fs.write(remote,file);
+   if(!uploaded||!uploaded.path)throw Error('Puter не підтвердив завантаження '+file.name);
+   ctx.paths.push(uploaded.path);
+  }
+  return ctx;
+ }catch(e){await cleanupAttachments(ctx);throw e;}
+}
+async function cleanupAttachments(ctx){
+ if(!ctx||!ctx.paths||!puter.fs||!puter.fs.delete)return;
+ await Promise.allSettled(ctx.paths.map(path=>puter.fs.delete(path)));
+}
+function requestArgs(prompt,context,options){
+ if(!context)return [prompt,options];
+ if(context.type==='image')return [prompt,context.file,options];
+ if(context.type==='files'&&Array.isArray(context.paths)&&context.paths.length){
+  return [[{role:'user',content:[
+   ...context.paths.map(path=>({type:'file',puter_path:path})),
+   {type:'text',text:prompt}
+  ]}],options];
+ }
+ throw Error('Вкладення не підготовлено');
+}
+function attachmentDescription(files){
+ return (files||[]).map(file=>file.name).join(', ');
+}
 function transient(e){
  const m=String(e&&e.message||e||'').toLowerCase();
  if(/no credits|balance|daily quota|billing|insufficient|402|403|401/.test(m))return false;
@@ -297,7 +397,7 @@ function renderAnswer(provider,message,kind){
  renderRich('answer-'+provider,message);
  $('dot-'+provider).className='dot '+(kind==='good'?'ok':kind==='bad'?'bad':'busy');
 }
-async function queryWithFallback(provider,prompt,modelChoices,render){
+async function queryWithFallback(provider,prompt,modelChoices,render,context=null){
  let lastError;
  const unique=[...new Set(modelChoices)].slice(0,4);
  for(let index=0;index<unique.length;index++){
@@ -308,7 +408,7 @@ async function queryWithFallback(provider,prompt,modelChoices,render){
    render(model,attempt);
    try{
     const options={model:model,normalize:true,max_tokens:provider==='google'?4096:2048};
-    const result=await puter.ai.chat(prompt,options);
+    const result=await puter.ai.chat(...requestArgs(prompt,context,options));
     const text=normResponse(result);
     return {provider,model,text};
    }catch(e){
@@ -334,13 +434,13 @@ function synthesisPrompt(question,entries){
  'Не вигадуй джерела, дати та перевірки.\n\nОригінальне питання:\n'+question+
  '\n\nВідповіді для порівняння:\n'+entries.map(x=>x.provider+' ('+x.model+'):\n'+x.text.slice(0,11000)).join('\n\n');
 }
-async function runOne(provider,question){
+async function runOne(provider,question,context=null){
  const list=modelList(provider);
  renderAnswer(provider,'Отримую відповідь…','busy');
  try{
   const response=await queryWithFallback(provider,independentPrompt(question),list,(model,attempt)=>{
    renderModel(provider,model+' · спроба '+attempt);
-  });
+  },context);
   results[provider]=response;
   renderAnswer(provider,response.text,'good');
   renderModel(provider,response.model+' · готово');
@@ -384,8 +484,9 @@ async function createSummary(question,entries){
 }
 async function ask(){
  if(active)return;
- const question=$('prompt').value.trim();
+ const question=$('prompt').value.trim()|| (attachments.length?'Проаналізуй додані фото або документи. Опиши важливі деталі, ризики та висновки.':'');
  if(!question){$('prompt').focus();return;}
+ const runFiles=attachments.map(x=>x.file);
  if(!window.puter||!puter.ai){status('bad','Немає з’єднання з Puter');return;}
  try{
   if(!(await puter.auth.isSignedIn())){status('warn','Спочатку підключи Puter');$('account').scrollIntoView({behavior:'smooth'});return;}
@@ -400,14 +501,22 @@ async function ask(){
  groups.forEach(k=>{renderAnswer(k,'Очікування відповіді…','busy');renderModel(k,'');});
  $('results').scrollIntoView({behavior:'smooth',block:'start'});
  try{
-  await Promise.all(groups.map(k=>runOne(k,question)));
+  $('progressText').textContent=runFiles.length?'Підготовка й завантаження вкладень…':'Звертаюся до моделей…';
+  const context=await prepareAttachments(runFiles);
+  try{
+   $('progressText').textContent='Аналіз фото та документів трьома моделями…';
+   await Promise.all(groups.map(k=>runOne(k,question,context)));
+  }finally{await cleanupAttachments(context);}
   const entries=groups.map(k=>results[k]).filter(x=>x&&x.text);
   $('progressText').textContent='Формую висновок…';
   const analysis=await createSummary(question,entries);
   renderRich('summary',analysis.summary);
   $('summaryBadge').textContent=analysis.badge;
   const summary=analysis.summary, badge=analysis.badge;
-  latest={at:new Date().toISOString(),question,summary,badge,responses:results};
+  latest={at:new Date().toISOString(),question,summary,badge,
+   attachmentNames:runFiles.map(f=>f.name),responses:results};
+  lastRunFiles=runFiles.slice();
+  lastRunAt=latest.at;
   history.unshift(latest);history=history.slice(0,12);storeHistory();showHistory();
   $('retryGemini').classList.toggle('hidden',!!(results.google&&results.google.text));
  }catch(e){
@@ -427,7 +536,15 @@ async function retryGemini(){
  $('retryGemini').textContent='Gemini: повторна перевірка…';
  $('summaryBadge').textContent='Перевіряю Gemini';
  try{
-  await runOne('google',question);
+  let ctx=null;
+  try{
+   const files=(lastRunAt===latest.at)?lastRunFiles:[];
+   if((latest.attachmentNames||[]).length&&!files.length){
+    throw Error('Файли з історії потрібно вибрати знову: повторне надсилання без них неможливе.');
+   }
+   ctx=await prepareAttachments(files);
+   await runOne('google',question,ctx);
+  }finally{await cleanupAttachments(ctx);}
   const entries=groups.map(k=>results[k]).filter(x=>x&&x.text);
   const analysis=await createSummary(question,entries);
   renderRich('summary',analysis.summary);
@@ -459,11 +576,13 @@ function showHistory(){
  history.forEach((item,index)=>{
   const button=document.createElement('button');
   const strong=document.createElement('strong');strong.textContent=(item.question||'').slice(0,120);
-  const subtitle=document.createElement('span');subtitle.textContent=new Date(item.at).toLocaleString('uk-UA')+' · '+(item.badge||'');
+  const subtitle=document.createElement('span');subtitle.textContent=new Date(item.at).toLocaleString('uk-UA')+' · '+(item.badge||'')+
+   (item.attachmentNames&&item.attachmentNames.length?' · 📎 '+item.attachmentNames.join(', '):'');
   button.append(strong,subtitle);
   button.addEventListener('click',()=>{
    if(active)return;
    latest=item;results=item.responses||{};
+   lastRunAt=null;lastRunFiles=[];
    $('prompt').value=item.question;
    $('results').classList.remove('hidden');
    renderRich('summary',item.summary);
@@ -473,7 +592,8 @@ function showHistory(){
     renderAnswer(k,result.text||result.error||'Немає відповіді',result.text?'good':'bad');
     renderModel(k,result.model||'');
    });
-   $('retryGemini').classList.toggle('hidden',!!(results.google&&results.google.text));
+   $('retryGemini').classList.toggle('hidden',!!(results.google&&results.google.text)||
+      !!(item.attachmentNames&&item.attachmentNames.length));
    $('results').scrollIntoView({behavior:'smooth'});
   });
   list.appendChild(button);
@@ -484,6 +604,12 @@ async function copy(text){
  try{await navigator.clipboard.writeText(text);alert('Скопійовано');}catch(e){alert('Не вдається скопіювати текст');}
 }
 $('ask').addEventListener('click',ask);
+$('addPhoto').addEventListener('click',()=>{$('attachmentInput').accept='image/jpeg,image/png,image/webp';$('attachmentInput').click();});
+$('addFile').addEventListener('click',()=>{$('attachmentInput').accept='.pdf,.doc,.docx,.xls,.xlsx,.txt,.csv,.json,.md,image/jpeg,image/png,image/webp';$('attachmentInput').click();});
+$('attachmentInput').addEventListener('change',event=>{
+ addAttachments(event.target.files);
+ event.target.value='';
+});
 $('retryGemini').addEventListener('click',retryGemini);
 $('signInButton').addEventListener('click',signIn);
 $('copySummary').addEventListener('click',()=>copy(rawOf('summary')));
