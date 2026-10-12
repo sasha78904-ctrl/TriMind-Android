@@ -1,4 +1,4 @@
-# TriMind AI 2.1 — Android
+# TriMind AI 2.2 — Android
 
 Three independent AI responses, one properly qualified synthesis.
 
@@ -25,3 +25,10 @@ Open **Налаштування та інші способи підключен�
 - Android build, JavaScript parsing and mocked empty-response regression are tested by GitHub Actions; full login/provider end-to-end functionality still needs testing on a physical Android device.
 
 Source code is open for audit. Not officially affiliated with OpenAI, Google, Anthropic, or Puter.
+
+## Attachments (TriMind 2.2)
+Use **📷 Фото з галереї** or **📎 Додати документ** in the primary Puter-powered screen. Android's system file picker gives access to selected photos and document files without granting broad storage permissions.
+
+Supported types: JPG/JPEG, PNG, WebP, PDF, DOC/DOCX, XLS/XLSX, TXT, CSV, JSON, Markdown. Up to four files, 15 MiB/file, 25 MiB total. A single image is sent directly as the second parameter of Puter AI Chat. Documents and mixed/multi-file requests are uploaded once to the user's Puter filesystem and attached to each of the three model messages by Puter path. The app attempts to delete the temporary Puter copies after the three requests; deletion is best-effort (for example, if the app crashes, copies could remain in Puter storage). Provider capabilities vary by model, and some Office documents or scanned PDFs might require converting to images or text before the model can analyze them correctly.
+
+The attachment picker and file data are used for the current run; history stores the names and AI answers but not the original file bytes. Retrying a prior attachment analysis after reopening the app requires selecting the files again. Do not upload confidential files without considering Puter and each AI provider's data handling.
