@@ -51,6 +51,9 @@ button.ghost{padding:8px;font-size:12px}
 .dot.busy{background:#f4b544}
 .provider{margin-top:10px}
 .provider .answer{max-height:510px;overflow:auto}
+.answer>div{min-height:1.25em}
+.answer>div.heading{font-weight:750;font-size:1.08em;margin-top:7px}
+.answer code{font-size:.9em;background:#eef3fb;border-radius:4px;padding:1px 4px}
 .fieldmeta{font-size:12px;color:var(--muted);overflow-wrap:anywhere}
 #historyList button{width:100%;text-align:left;margin-bottom:7px;background:#f4f7fe}
 #historyList strong{display:block;color:#182b4f}
@@ -110,7 +113,9 @@ details summary{font-weight:700;cursor:pointer;padding:7px 0}
   </div>
   <div class="card provider" id="card-google">
    <div class="cardhead"><div class="column"><i class="dot" id="dot-google"></i><h3>Gemini · Google</h3></div><button class="ghost" data-copy="google">Копіювати</button></div>
-   <div class="fieldmeta" id="model-google"></div><div class="answer" id="answer-google">Очікування…</div>
+   <div class="fieldmeta" id="model-google"></div>
+   <div class="answer" id="answer-google">Очікування…</div>
+   <div class="actions"><button class="secondary hidden" id="retryGemini">↻ Повторити лише Gemini</button></div>
   </div>
   <div class="card provider" id="card-anthropic">
    <div class="cardhead"><div class="column"><i class="dot" id="dot-anthropic"></i><h3>Claude · Anthropic</h3></div><button class="ghost" data-copy="anthropic">Копіювати</button></div>
@@ -141,16 +146,16 @@ const $=id=>document.getElementById(id);
 const groups=['openai','google','anthropic'];
 const CANDIDATES={
  economy:{
- openai:['openai/gpt-5.4-nano','gpt-5.4-nano','openai/gpt-5.4-mini'],
- google:['google/gemini-3.8-flash','gemini-3.8-flash','google/gemini-3.5-flash-lite'],
- anthropic:['anthropic/claude-haiku-4-5','claude-haiku-4-5','anthropic/claude-sonnet-4-6']
+  openai:['gpt-5.4-nano','gpt-5.4-mini'],
+  google:['gemini-3.5-flash-lite','gemini-3.1-flash-lite','gemini-3.8-flash','gemini-3.1-flash'],
+  anthropic:['claude-haiku-4-5','claude-fable-5','claude-sonnet-4-6']
  },
  quality:{
- openai:['openai/gpt-5.5','gpt-5.5','openai/gpt-5.4-mini'],
- google:['google/gemini-3.1-pro','gemini-3.1-pro','google/gemini-3.8-flash'],
- anthropic:['anthropic/claude-sonnet-5','claude-sonnet-5','anthropic/claude-sonnet-4-6']
+  openai:['gpt-5.5','gpt-5.4-mini','gpt-5.4-nano'],
+  google:['gemini-3.8-flash','gemini-3.1-flash','gemini-3.1-pro','gemini-3.5-flash-lite'],
+  anthropic:['claude-sonnet-5','claude-sonnet-4-6','claude-fable-5']
  }};
-let active=false, results={}, history=[], modelIds=null, latest=null;
+let active=false, results={}, history=[], modelCatalog=null, latest=null;
 try{ history=JSON.parse(localStorage.getItem('trimind_history_v2')||'[]');if(!Array.isArray(history))history=[];}catch(e){}
 try{$('quality').value=localStorage.getItem('trimind_quality')||'economy';}catch(e){}
 const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
@@ -165,13 +170,56 @@ const cleanError=e=>{
  return msg.slice(0,290);
 };
 function normResponse(data){
- if(typeof data==='string')return data.trim();
- let content=data&&data.message&&data.message.content;
- if(typeof content==='string')return content.trim();
- if(Array.isArray(content))return content.map(x=>x&&x.text||'').join('\n').trim();
- if(data&&typeof data.text==='string')return data.text.trim();
- throw new Error('Модель повернула порожню або невідому відповідь');
+ const extract=(value,depth=0)=>{
+  if(depth>5||value==null)return '';
+  if(typeof value==='string')return value.trim();
+  if(Array.isArray(value))return value.map(part=>extract(part,depth+1)).filter(Boolean).join('\n').trim();
+  if(typeof value==='object'){
+   for(const key of ['content','text','output_text','parts','message','response','output']){
+    if(key in value){
+     const text=extract(value[key],depth+1);
+     if(text)return text;
+    }
+   }
+  }
+  return '';
+ };
+ const text=extract(data);
+ if(text)return text;
+ const reason=String((data&&(data.finish_reason||data.stopReason))||'невідомо');
+ const error=new Error('Модель повернула порожній текст (завершення: '+reason+').');
+ error.code='EMPTY_OUTPUT';
+ throw error;
 }
+function renderRich(id,value){
+ const target=$(id),raw=String(value==null?'':value);
+ target.dataset.raw=raw;
+ target.replaceChildren();
+ const make=(tag,txt)=>{
+  const node=document.createElement(tag);
+  node.textContent=txt;
+  return node;
+ };
+ for(const source of raw.split(/\r?\n/)){
+  const line=document.createElement('div');
+  let current=source;
+  if(/^#{1,4}\s+/.test(current)){
+   line.className='heading';
+   current=current.replace(/^#{1,4}\s+/,'');
+  }
+  current=current.replace(/^\s*[-*]\s+/,'• ');
+  const tokens=/(\*\*([^*\n]+)\*\*|`([^`\n]+)`)/g;
+  let match,at=0;
+  while((match=tokens.exec(current))!==null){
+   if(match.index>at)line.appendChild(document.createTextNode(current.slice(at,match.index)));
+   line.appendChild(make(match[2]!==undefined?'strong':'code',match[2]!==undefined?match[2]:match[3]));
+   at=tokens.lastIndex;
+  }
+  if(at<current.length)line.appendChild(document.createTextNode(current.slice(at)));
+  target.appendChild(line);
+ }
+}
+function rawOf(id){return ($(id).dataset.raw||$(id).textContent||'');}
 function status(kind,caption){let badge=$('accountBadge');badge.className='badge '+(kind==='good'?'good':kind==='bad'?'err':'warn');badge.textContent=caption;}
 async function checkAuth(){
  if(!window.puter||!puter.auth){status('bad','SDK недоступний');$('accountInfo').textContent='Не вдається завантажити Puter. Перевір інтернет та повтори спробу.';return;}
@@ -196,53 +244,80 @@ async function signIn(){
 async function loadModels(){
  try{
   const all=await puter.ai.listModels();
-  if(Array.isArray(all))modelIds=new Set(all.map(x=>String(x.id||'')));
- }catch(e){modelIds=null;}
+  if(Array.isArray(all))modelCatalog=all.filter(x=>x&&typeof x.id==='string'&&x.id);
+ }catch(e){modelCatalog=null;}
+}
+function vendorMatch(item,provider){
+ const id=String(item.id||'').toLowerCase();
+ const vendor=String(item.provider||'').toLowerCase();
+ const prefixes={
+  openai:/^(openai\/|gpt-|o[1-9]-)/,
+  google:/^(google\/|gemini-)/,
+  anthropic:/^(anthropic\/|claude-)/
+ };
+ // Explicitly reject models belonging to a different vendor.
+ const ownVendor={
+  openai:['openai'],
+  google:['google','gemini'],
+  anthropic:['anthropic','claude']
+ };
+ if(vendor&&['openai','google','gemini','anthropic','claude'].includes(vendor)
+  &&!ownVendor[provider].includes(vendor))return false;
+ return prefixes[provider].test(id)&&
+  !/image|embed|audio|video|tts|vision|realtime|live|:priority/i.test(id);
 }
 function modelList(provider){
- const choices=CANDIDATES[$('quality').value][provider];
- if(!modelIds)return choices;
- const present=choices.filter(x=>modelIds.has(x));
- // If preferred IDs were removed, do not silently substitute a different vendor.
- if(present.length)return present;
- const prefix={openai:/^(openai\/|gpt-)/i,google:/^(google\/|gemini-)/i,anthropic:/^(anthropic\/|claude-)/i}[provider];
- const options=[...modelIds].filter(x=>prefix.test(x)&&!/image|embed|audio|video|tts|vision|realtime/i.test(x));
- return options.length?options.slice(0,2):choices;
+ const configured=CANDIDATES[$('quality').value][provider];
+ if(!modelCatalog||!modelCatalog.length)return configured;
+ const supported=modelCatalog.filter(x=>vendorMatch(x,provider));
+ if(!supported.length)return configured;
+ const byName=name=>supported.find(x=>x.id===name)
+   ||supported.find(x=>x.id.endsWith('/'+name));
+ const selected=[];
+ for(const name of configured){
+  const item=byName(name);
+  if(item&&!selected.includes(item.id))selected.push(item.id);
+ }
+ for(const item of supported){
+  if(!selected.includes(item.id))selected.push(item.id);
+ }
+ return selected.slice(0,5);
 }
 function transient(e){
  const m=String(e&&e.message||e||'').toLowerCase();
- if(/no credits|balance|daily quota|billing|insufficient|402/.test(m))return false;
+ if(/no credits|balance|daily quota|billing|insufficient|402|403|401/.test(m))return false;
  return /429|500|502|503|504|overload|timeout|timed out|high demand|temporarily|try again|unavailable|rate limit/.test(m);
 }
 function unknownModel(e){
  return /404|model not found|no longer available|unknown model|not supported|invalid model/i.test(String(e&&e.message||e||''));
 }
+function emptyOutput(e){return e&&e.code==='EMPTY_OUTPUT';}
 function renderModel(provider,label){$('model-'+provider).textContent=label;}
 function renderAnswer(provider,message,kind){
- $('answer-'+provider).textContent=message;
+ renderRich('answer-'+provider,message);
  $('dot-'+provider).className='dot '+(kind==='good'?'ok':kind==='bad'?'bad':'busy');
 }
 async function queryWithFallback(provider,prompt,modelChoices,render){
  let lastError;
- for(let index=0;index<Math.min(modelChoices.length,3);index++){
-  const model=modelChoices[index];
-  let attempt=0;
-  while(attempt<3){
-   attempt++;
+ const unique=[...new Set(modelChoices)].slice(0,4);
+ for(let index=0;index<unique.length;index++){
+  const model=unique[index];
+  // Retry a temporarily empty result once, then switch to a different model.
+  const attempts=index===0?2:1;
+  for(let attempt=1;attempt<=attempts;attempt++){
    render(model,attempt);
    try{
-    const result=await puter.ai.chat(prompt,{model:model,normalize:true});
+    const options={model:model,normalize:true,max_tokens:provider==='google'?4096:2048};
+    const result=await puter.ai.chat(prompt,options);
     const text=normResponse(result);
-    if(!text)throw new Error('Порожня відповідь');
     return {provider,model,text};
    }catch(e){
     lastError=e;
     if(unknownModel(e))break;
-    if(!transient(e))throw e;
-    if(attempt<3)await sleep(700*Math.pow(2,attempt-1)+Math.floor(Math.random()*400));
+    if(!transient(e)&&!emptyOutput(e))throw e;
+    if(attempt<attempts)await sleep(650+Math.floor(Math.random()*350));
    }
   }
-  if(index+1<modelChoices.length)await sleep(400);
  }
  throw lastError||new Error('Моделі недоступні');
 }
@@ -277,6 +352,10 @@ async function runOne(provider,question){
  const count=groups.filter(k=>results[k]&&results[k].text).length;
  $('count').textContent=count+' / 3';
 }
+async function createSummary(question,entries){
+
+  return {summary,badge};
+}
 async function ask(){
  if(active)return;
  const question=$('prompt').value.trim();
@@ -291,50 +370,55 @@ async function ask(){
  $('progress').classList.remove('hidden');
  $('count').textContent='0 / 3';
  $('summaryBadge').textContent='Аналіз триває';
- $('summary').textContent='Поки що збираю незалежні відповіді…';
+ renderRich('summary','Поки що збираю незалежні відповіді…');
  groups.forEach(k=>{renderAnswer(k,'Очікування відповіді…','busy');renderModel(k,'');});
  $('results').scrollIntoView({behavior:'smooth',block:'start'});
  try{
   await Promise.all(groups.map(k=>runOne(k,question)));
   const entries=groups.map(k=>results[k]).filter(x=>x&&x.text);
   $('progressText').textContent='Формую висновок…';
-  let summary='',badge='';
-  if(entries.length===0){
-   summary='Жоден провайдер не повернув відповідь. Перевір підключення Puter, ліміт акаунта та спробуй пізніше. Нижче видно окремі помилки.';
-   badge='0 із 3 · немає відповіді';
-  }else if(entries.length===1){
-   summary='Це лише одна відповідь від '+entries[0].provider+'. Незалежної перевірки двома іншими системами немає.\n\n'+entries[0].text;
-   badge='1 із 3 · не консенсус';
-  }else{
-   badge=entries.length+' із 3 · порівняння';
-   const priority=['google','openai','anthropic'];
-   let lastSynthError='';
-   for(const p of priority){
-    if(!entries.some(x=>x.provider===p))continue;
-    try{
-     const synth=await queryWithFallback(p,synthesisPrompt(question,entries),modelList(p),()=>{});
-     summary=synth.text;
-     badge+=' · '+p;
-     break;
-    }catch(e){lastSynthError=cleanError(e);}
-   }
-   if(!summary){
-    summary='Відповіді '+entries.length+' моделей отримані, але додатковий підсумковий запит не вдався: '+lastSynthError+
-    '\n\nЦе НЕ зведений висновок. Нижче доступні вихідні відповіді для ручного порівняння.';
-    badge='Не вдалося узгодити';
-   }
-  }
-  $('summary').textContent=summary;
-  $('summaryBadge').textContent=badge;
+  const analysis=await createSummary(question,entries);
+  renderRich('summary',analysis.summary);
+  $('summaryBadge').textContent=analysis.badge;
+  const summary=analysis.summary, badge=analysis.badge;
   latest={at:new Date().toISOString(),question,summary,badge,responses:results};
   history.unshift(latest);history=history.slice(0,12);storeHistory();showHistory();
+  $('retryGemini').classList.toggle('hidden',!!(results.google&&results.google.text));
  }catch(e){
-  $('summary').textContent='Невідома помилка: '+cleanError(e);
+  renderRich('summary','Невідома помилка: '+cleanError(e));
   $('summaryBadge').textContent='Помилка';
  }finally{
   active=false;
   $('ask').disabled=false;$('ask').textContent='Отримати відповіді трьох ШІ';
   $('progress').classList.add('hidden');
+ }
+}
+async function retryGemini(){
+ if(active||!latest)return;
+ const question=latest.question;
+ active=true;
+ $('retryGemini').disabled=true;
+ $('retryGemini').textContent='Gemini: повторна перевірка…';
+ $('summaryBadge').textContent='Перевіряю Gemini';
+ try{
+  await runOne('google',question);
+  const entries=groups.map(k=>results[k]).filter(x=>x&&x.text);
+  const analysis=await createSummary(question,entries);
+  renderRich('summary',analysis.summary);
+  $('summaryBadge').textContent=analysis.badge;
+  latest.summary=analysis.summary;
+  latest.badge=analysis.badge;
+  latest.responses={...results};
+  const h=history.findIndex(x=>x.at===latest.at);
+  if(h>=0){history[h]=latest;storeHistory();showHistory();}
+ }catch(e){
+  renderRich('summary','Не вдалося оновити аналіз: '+cleanError(e));
+  $('summaryBadge').textContent='Помилка порівняння';
+ }finally{
+  active=false;
+  $('retryGemini').disabled=false;
+  $('retryGemini').textContent='↻ Повторити лише Gemini';
+  $('retryGemini').classList.toggle('hidden',!!(results.google&&results.google.text));
  }
 }
 function storeHistory(){
@@ -356,13 +440,14 @@ function showHistory(){
    latest=item;results=item.responses||{};
    $('prompt').value=item.question;
    $('results').classList.remove('hidden');
-   $('summary').textContent=item.summary;
+   renderRich('summary',item.summary);
    $('summaryBadge').textContent=item.badge;
    groups.forEach(k=>{
     const result=results[k]||{};
     renderAnswer(k,result.text||result.error||'Немає відповіді',result.text?'good':'bad');
     renderModel(k,result.model||'');
    });
+   $('retryGemini').classList.toggle('hidden',!!(results.google&&results.google.text));
    $('results').scrollIntoView({behavior:'smooth'});
   });
   list.appendChild(button);
@@ -373,10 +458,11 @@ async function copy(text){
  try{await navigator.clipboard.writeText(text);alert('Скопійовано');}catch(e){alert('Не вдається скопіювати текст');}
 }
 $('ask').addEventListener('click',ask);
+$('retryGemini').addEventListener('click',retryGemini);
 $('signInButton').addEventListener('click',signIn);
-$('copySummary').addEventListener('click',()=>copy($('summary').textContent));
-$('copyAll').addEventListener('click',()=>copy('Спільний аналіз:\n'+$('summary').textContent+'\n\n'+groups.map(k=>k.toUpperCase()+'\n'+$('answer-'+k).textContent).join('\n\n')));
-document.querySelectorAll('[data-copy]').forEach(button=>button.addEventListener('click',()=>copy($('answer-'+button.dataset.copy).textContent)));
+$('copySummary').addEventListener('click',()=>copy(rawOf('summary')));
+$('copyAll').addEventListener('click',()=>copy('Спільний аналіз:\n'+rawOf('summary')+'\n\n'+groups.map(k=>k.toUpperCase()+'\n'+rawOf('answer-'+k)).join('\n\n')));
+document.querySelectorAll('[data-copy]').forEach(button=>button.addEventListener('click',()=>copy(rawOf('answer-'+button.dataset.copy))));
 document.querySelectorAll('[data-template]').forEach(button=>button.addEventListener('click',()=>{$('prompt').value=button.dataset.template+$('prompt').value;$('prompt').focus();}));
 $('clearHistory').addEventListener('click',()=>{
  if(confirm('Стерти історію TriMind на телефоні?')){history=[];latest=null;storeHistory();showHistory();}

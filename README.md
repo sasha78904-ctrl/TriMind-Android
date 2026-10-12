@@ -1,4 +1,4 @@
-# TriMind AI 2 — Android
+# TriMind AI 2.1 — Android
 
 Three independent AI responses, one properly qualified synthesis.
 
@@ -10,7 +10,7 @@ The default launch screen uses [Puter.js](https://docs.puter.com/) to access mod
 3. Enter a question and press **Отримати відповіді трьох ШІ**.
 4. Wait for 3 separate answers and synthesis. One successful answer is labeled as one, *never* a consensus.
 
-Features: concurrent requests to three vendors, 503/transient-error retries with exponential backoff, fallback models, lower-cost and premium modes, 12-entry on-device history, one-tap copy, data-safe text rendering, and automatic selection of an available provider to synthesize 2+ replies.
+Version 2.1 adds empty-response retries, automatic Gemini model switching, safe inline Markdown display, and a **Retry only Gemini** action that reuses other completed replies without resending their original requests.\n\nFeatures: concurrent requests to three vendors, 503/transient-error retries with exponential backoff, fallback models, lower-cost and premium modes, 12-entry on-device history, one-tap copy, data-safe text rendering, and automatic selection of an available provider to synthesize 2+ replies.
 
 ## Alternative: direct provider API
 Open **Налаштування та інші способи підключення → Відкрити пряме API-підключення**. Enter OpenAI, Gemini, and/or Anthropic keys. They are encrypted at rest using Android Keystore. Provider billing/quotas are separate; ChatGPT Plus is not API credit.
@@ -22,6 +22,6 @@ Open **Налаштування та інші способи підключен�
 - The JavaScript SDK is loaded from https://js.puter.com/v2/ at runtime and requires Internet access.
 - Local history remains on the device in WebView localStorage and is erased when Android app data is cleared/uninstalled. Direct API keys are stored separately using Android Keystore.
 - This is an unsigned-by-publisher **debug** APK signed by GitHub's temporary test key. When updating from another build, Android might reject a mismatched signature; reinstall and re-enter credentials if necessary. For a stable upgrade chain, provision a permanent production signing key.
-- Android build and JavaScript parsing are tested by GitHub Actions; full login/provider end-to-end functionality still needs testing on a physical Android device.
+- Android build, JavaScript parsing and mocked empty-response regression are tested by GitHub Actions; full login/provider end-to-end functionality still needs testing on a physical Android device.
 
 Source code is open for audit. Not officially affiliated with OpenAI, Google, Anthropic, or Puter.

@@ -33,6 +33,8 @@ jobs:
           Path("/tmp/trimind-script.js").write_text(scripts[-1])
           PY
           node --check /tmp/trimind-script.js
+      - name: Test UI recovery from an empty Gemini response
+        run: node tests/ui_logic.test.js
       - name: Install Android SDK packages
         run: |
           SDKMANAGER="$(find "$ANDROID_HOME/cmdline-tools" -type f -name sdkmanager | head -n 1)"
