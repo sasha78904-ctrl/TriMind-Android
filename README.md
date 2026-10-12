@@ -1,4 +1,4 @@
-# TriMind AI 2.2 — Android
+# TriMind AI 2.3 — Android
 
 Three independent AI responses, one properly qualified synthesis.
 
@@ -32,3 +32,14 @@ Use **📷 Фото з галереї** or **📎 Додати документ*
 Supported types: JPG/JPEG, PNG, WebP, PDF, DOC/DOCX, XLS/XLSX, TXT, CSV, JSON, Markdown. Up to four files, 15 MiB/file, 25 MiB total. A single image is sent directly as the second parameter of Puter AI Chat. Documents and mixed/multi-file requests are uploaded once to the user's Puter filesystem and attached to each of the three model messages by Puter path. The app attempts to delete the temporary Puter copies after the three requests; deletion is best-effort (for example, if the app crashes, copies could remain in Puter storage). Provider capabilities vary by model, and some Office documents or scanned PDFs might require converting to images or text before the model can analyze them correctly.
 
 The attachment picker and file data are used for the current run; history stores the names and AI answers but not the original file bytes. Retrying a prior attachment analysis after reopening the app requires selecting the files again. Do not upload confidential files without considering Puter and each AI provider's data handling.
+
+## TriMind 2.3 — multi-round AI deliberation
+The default **Debate** mode conducts a transparent structured exchange (not three isolated answers and an assumed consensus):
+1. Query OpenAI, Google and Anthropic independently (3 calls; each can inspect selected photos/files).
+2. Send other providers' answers to each available model for evidence-based rebuttal and revision (up to 3 calls; these exchanges use text summaries, not the original attachments).
+3. One available model writes an explicitly unapproved candidate decision (1 call).
+4. Each available original model checks that candidate and votes `VERDICT: AGREE`, `RESERVATIONS` or `DISAGREE` independently (up to 3 calls).
+
+The UI exposes review transcripts, candidate decision, and votes. It displays **agreed by all three** only when all 3 answered, all 3 completed a critique, and all 3 explicitly voted AGREE. Missing, malformed, or dissenting votes never count as agreement. No AI consensus implies external truth.
+
+Normal use requires 10 calls, and there is a hard cap of **14 attempted Puter AI requests per debate** including retries. Puter charges or depletes account allowance according to the selected models; when the cap is reached, the app returns the incomplete/disputed result rather than sending additional queries. Use **Quick analysis** to reduce costs. History stores clipped transcripts and vote decisions locally (up to 12 sessions). Documents/photos themselves are not stored in history and are sent only on the first round.

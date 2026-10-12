@@ -33,7 +33,7 @@ jobs:
           Path("/tmp/trimind-script.js").write_text(scripts[-1])
           PY
           node --check /tmp/trimind-script.js
-      - name: Test UI recovery from an empty Gemini response
+      - name: Test attachments, model recovery and AI deliberation
         run: node tests/ui_logic.test.js
       - name: Install Android SDK packages
         run: |

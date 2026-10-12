@@ -6,7 +6,7 @@ const vm=require('node:vm');
 const html=fs.readFileSync('app/src/main/assets/index.html','utf8');
 const scripts=[...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/g)].map(m=>m[1]).filter(x=>x.trim());
 assert(scripts.length>0,'UI script missing');
-const embedded=scripts.at(-1).replace(/\}\)\(\);\s*$/,'globalThis.__test={normResponse,queryWithFallback,modelList,renderRich,rawOf,createSummary,requestArgs,fileValid,prepareAttachments,cleanupAttachments};\n})();');
+const embedded=scripts.at(-1).replace(/\}\)\(\);\s*$/,'globalThis.__test={normResponse,queryWithFallback,modelList,renderRich,rawOf,createSummary,requestArgs,fileValid,prepareAttachments,cleanupAttachments,parseVerdict,deliberate,reviewPrompt,votePrompt};\n})();');
 assert(embedded.includes('globalThis.__test'),'Test entrypoint not attached');
 
 class Element {
@@ -26,6 +26,8 @@ const document={
 nodes.quality=new Element();
 nodes.quality.value='economy';
 const calls=[];
+const debatePrompts=[];
+let scenario='';
 const fileOperations=[];
 const puter={
  fs:{write:async(path,file)=>{fileOperations.push(['upload',path,file.name]);return {path:'~/tmp/'+path}},delete:async(path)=>{fileOperations.push(['delete',path])}},
@@ -34,6 +36,19 @@ const puter={
    listModels:async()=>[],
    chat:async(prompt,{model})=>{
      calls.push(model);
+     if(scenario){
+       debatePrompts.push(prompt);
+       if(prompt.includes('Раунд взаємної критики'))
+         return {message:{content:'Оновлена позиція: відповідь 14, враховано аргументи інших.'}};
+       if(prompt.includes('Ти модератор'))
+         return {message:{content:'Пропоную підтвердити: 56 / 4 = 14.'}};
+       if(prompt.includes('ПЕРШИЙ РЯДОК')){
+         return {message:{content:(scenario==='dissent'&&model.includes('claude')
+           ? 'VERDICT: DISAGREE\nНе погоджуюсь із ризиками.'
+           : 'VERDICT: AGREE\nПідтверджую.' )}};
+       }
+       throw new Error('Unexpected round: '+prompt.slice(0,90));
+     }
      if(model==='gemini-3.5-flash-lite')
        return {message:{content:null},finish_reason:'length'};
      if(model==='gemini-3.1-flash-lite')
@@ -97,6 +112,41 @@ async function main(){
  const one=await t.createSummary('56/4',[{provider:'google',model:'gemini',text:'14'}]);
  assert.match(one.badge,/1 із 3/);
  assert.match(one.summary,/не має|лише одна/i);
- console.log('TriMind offline UI regression tests passed.');
+ assert.equal(t.parseVerdict('VERDICT: AGREE\nОбґрунтування'),'AGREE');
+ assert.equal(t.parseVerdict('VERDICT: RESERVATIONS\nЄ сумніви'),'RESERVATIONS');
+ assert.equal(t.parseVerdict('VERDICT: DISAGREE'),'DISAGREE');
+ assert.equal(t.parseVerdict('Так, усе добре'),'UNKNOWN');
+ const initial=[
+  {provider:'openai',model:'gpt-5.4-nano',text:'56/4 = 14.'},
+  {provider:'google',model:'gemini-3.5-flash-lite',text:'Результат 14.'},
+  {provider:'anthropic',model:'claude-haiku-4-5',text:'14.'}
+ ];
+ scenario='consensus';
+ const budget={max:14,used:3,remaining:11};
+ const discussed=await t.deliberate('56 поділити на 4',initial,budget);
+ assert.equal(discussed.badge,'Узгоджено трьома ШІ');
+ assert.equal(discussed.votes.length,3);
+ assert.equal(discussed.reviewed,3);
+ assert.equal(discussed.debate.length,7);
+ assert.equal(budget.used,10,'Full dialogue should use 10 base model calls');
+ assert(debatePrompts.some(p=>p.includes('Відповіді інших:')&&p.includes('Результат 14.')),
+   'The models must actually receive each others arguments');
+ assert(debatePrompts.some(p=>p.includes('Проєкт рішення:\n')),
+   'Each model must receive the proposed common decision');
+ scenario='dissent';
+ const contested=await t.deliberate('56 поділити на 4',initial,{max:14,used:3,remaining:11});
+ assert.notEqual(contested.badge,'Узгоджено трьома ШІ');
+ assert(contested.summary.includes('ПОВНОЇ ЗГОДИ ТРЬОХ ШІ НЕМАЄ'));
+ assert(contested.votes.some(v=>v.verdict==='DISAGREE'));
+ scenario='consensus';
+ const two=await t.deliberate('56 поділити на 4',initial.slice(0,2),
+   {max:14,used:2,remaining:12});
+ assert.notEqual(two.badge,'Узгоджено трьома ШІ');
+ assert.equal(two.votes.length,2);
+ const exhausted=await t.deliberate('56 поділити на 4',initial,
+   {max:3,used:3,remaining:0});
+ assert.notEqual(exhausted.badge,'Узгоджено трьома ШІ');
+ assert.match(exhausted.summary,/Обговорення не вдалося/);
+ console.log('TriMind offline UI, attachments and deliberation regression tests passed.');
 }
 main().catch(e=>{console.error(e);process.exit(1);});
