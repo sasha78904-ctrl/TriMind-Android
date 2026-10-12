@@ -353,8 +353,34 @@ async function runOne(provider,question){
  $('count').textContent=count+' / 3';
 }
 async function createSummary(question,entries){
-
-  return {summary,badge};
+ let summary='',badge='';
+ if(entries.length===0){
+  summary='Жоден провайдер не повернув відповідь. Перевір підключення Puter, ліміт акаунта та спробуй пізніше. Нижче видно окремі помилки.';
+  badge='0 із 3 · немає відповіді';
+ }else if(entries.length===1){
+  summary='Це лише одна відповідь від '+entries[0].provider+
+    '. Незалежної перевірки двома іншими системами немає.\\n\\n'+entries[0].text;
+  badge='1 із 3 · не консенсус';
+ }else{
+  badge=entries.length+' із 3 · порівняння';
+  const priority=['google','openai','anthropic'];
+  let lastSynthError='';
+  for(const p of priority){
+   if(!entries.some(x=>x.provider===p))continue;
+   try{
+    const synthesis=await queryWithFallback(p,synthesisPrompt(question,entries),modelList(p),()=>{});
+    summary=synthesis.text;
+    badge+=' · '+p;
+    break;
+   }catch(e){lastSynthError=cleanError(e);}
+  }
+  if(!summary){
+   summary='Відповіді '+entries.length+' моделей отримані, але додатковий підсумковий запит не вдався: '+
+     lastSynthError+'\\n\\nЦе НЕ зведений висновок. Нижче доступні вихідні відповіді для ручного порівняння.';
+   badge='Не вдалося узгодити';
+  }
+ }
+ return {summary,badge};
 }
 async function ask(){
  if(active)return;
