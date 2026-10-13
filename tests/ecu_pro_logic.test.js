@@ -69,7 +69,7 @@ const indexedDB={open(){
 }};
 const localStorage={getItem:k=>memory.get(k)||null,setItem:(k,v)=>memory.set(k,v)};
 const context={window:win,document,crypto:webcrypto,Uint8Array,Uint32Array,Math,Date,TextEncoder,
- URL,URLSearchParams,fetch,indexedDB,localStorage,setTimeout,clearTimeout,console,
+ URL,URLSearchParams,AbortController,fetch,indexedDB,localStorage,setTimeout,clearTimeout,console,
  confirm:()=>true,File:class{constructor(p,name){this.bytes=p[0];this.name=name;}},btoa,
  DOMParser:class{
   parseFromString(){
