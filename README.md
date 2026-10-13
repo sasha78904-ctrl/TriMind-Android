@@ -1,4 +1,4 @@
-# TriMind AI 3.0 — Android
+# TriMind AI 3.1 — Android
 
 Three independent AI responses, one properly qualified synthesis.
 
@@ -56,3 +56,14 @@ No secret service credentials in public GitHub code. Puter user login is require
 
 ### Build verification
 GitHub Actions compiles the Android APK and runs source syntax tests, existing debate/attachment mocks, and v3 deterministic tests with mock Wikimedia/Crossref and speech/OCR responses. Real device camera/file selection, service quotas, provider model behavior, Android permission delivery and Puter login require live testing on the user's Android phone.
+
+## TriMind 3.1 — Read-only ECU Firmware Lab
+This is a local, **read-only static firmware analyzer**, not an ECU flashing or tuning program.
+
+- Select original or edited ECU memory dumps, up to **32 MiB** each. Supports raw BIN/ORI/MOD/EEP/FLASH/ROM/DUMP, Intel HEX, and Motorola S-record (S19/S28/S37/MOT). The tool handles raw filenames like "mers nov". Vendor-specific compressed FRF/ODX and calibration definitions such as A2L/DAMOS/XDF require their respective tools; this implementation does not parse them.
+- Compute SHA-256 using Android WebView Web Crypto (reports "unavailable" if unsupported), global and 8-KiB-segment byte entropy, FF/00 counts, memory-format record checksum validation, printable metadata strings with byte offsets, raw bytes preview.
+- Load a second file and compute byte-accurate differences in the aligned shared region (changed-byte count, changed-region ranges, length delta). **Offset correspondence must be validated** if the dumps use different address ranges.
+- Show targeted real search links for ECUConnections, MHH Auto, ECUedit, NefMoto, CarTechnology, Digital Kaos, GitHub, Bosch, TunerPro and others. Optional Puter OpenAI web-search execution requests live sources, subject to account/provider feature availability, usage quota and authentication. A search summary is AI-generated: its sources must be independently verified. We **do not bypass forum logins or scrape protected content**; "search across all forums" cannot be guaranteed.
+- The button to consult all three AIs inserts the **locally calculated byte report**, not the raw binary, into the existing TriMind chat panel. The user then explicitly starts the multi-AI deliberation. Store a report in the active TriMind project or copy as text.
+- **No editing/patching/flashing, immobilizer bypass, emission-control bypass recipes, or counterfeit OEM checksum verification**. ECU-specific maps, calibration axis interpretation, anti-tuning signatures, proprietary Bosch/Continental checksum validity and safe drivability conclusions require original firmware reference, suitable ECU-specific calibration metadata, instrumentation, and expert bench validation.
+- Uploaded proprietary firmware samples are not committed to this public repository. Automated tests are synthetic only. Real-device verification of Android file picking, Puter web search and UI behavior is still required.

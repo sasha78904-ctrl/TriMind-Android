@@ -39,6 +39,10 @@ jobs:
         run: |
           node --check app/src/main/assets/v3.js
           node tests/v3_logic.test.js
+      - name: Validate ECU firmware laboratory
+        run: |
+          node --check app/src/main/assets/ecu.js
+          node tests/ecu_logic.test.js
       - name: Install Android SDK packages
         run: |
           SDKMANAGER="$(find "$ANDROID_HOME/cmdline-tools" -type f -name sdkmanager | head -n 1)"

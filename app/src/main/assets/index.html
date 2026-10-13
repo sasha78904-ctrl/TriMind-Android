@@ -29,6 +29,10 @@ p{margin:6px 0 12px}
 .small{font-size:12px}
 button,select,textarea,input{font:inherit}
 .v3field{width:100%;border:1.5px solid #d4deed;border-radius:11px;padding:10px;background:#fff;color:var(--ink)}
+.ecuDump{white-space:pre-wrap;overflow-wrap:anywhere;background:#f5f7fc;border-radius:10px;padding:12px;max-height:480px;overflow:auto;font-size:12px;color:var(--ink)}
+.ecuSources{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.ecuSources a{background:#f1f5ff;color:#2050a7;text-decoration:none;padding:8px 10px;border-radius:9px;font-size:12px;border:1px solid #dce5fa}
+#ecuPrimary,#ecuReference{padding:9px;font-size:13px}
 #watchList .discussionEntry{margin:8px 0}#sourceLedger a{color:#174eb8;overflow-wrap:anywhere}
 #watchUpdates{font-size:13px;color:#9b5d13}
 button{border:0;border-radius:12px;padding:12px 14px;background:#edf2fc;color:#173971;font-weight:700;cursor:pointer}
@@ -83,6 +87,7 @@ details summary{font-weight:700;cursor:pointer;padding:7px 0}
 @keyframes slide{from{transform:translateX(0)}to{transform:translateX(210%)}}
 </style>
 <script src="https://trimind.local/v3.js"></script>
+<script src="https://trimind.local/ecu.js"></script>
 <script src="https://js.puter.com/v2/" onerror="window.sdkFailed=true"></script>
 </head>
 <body>
@@ -103,6 +108,37 @@ details summary{font-weight:700;cursor:pointer;padding:7px 0}
    <input id="importProject" type="file" accept=".json,application/json">
    <p id="projectStats" class="muted small"></p><div id="projectNotes"></div>
   </details>
+ </section>
+<section class="card" id="ecuLabCard">
+  <div class="cardhead"><h2>🔬 ECU Firmware Lab</h2><span class="badge">Новий модуль 3.1</span></div>
+  <p class="muted">Технічна перевірка дампів ЕБУ без зміни оригінальних файлів. Аналізуються байти, ідентифікатори, SHA-256, ентропія, ділянки 0x00/0xFF та зміни відносно еталона.</p>
+  <label for="ecuPrimary">Основна прошивка (BIN / ORI / MOD / HEX / S19)</label>
+  <input id="ecuPrimary" type="file" class="v3field" accept=".bin,.ori,.mod,.eep,.flash,.rom,.dump,.hex,.ihex,.s19,.s28,.s37,.srec,.mot,application/octet-stream">
+  <label for="ecuReference">Еталонна або попередня прошивка — для порівняння</label>
+  <input id="ecuReference" type="file" class="v3field" accept=".bin,.ori,.mod,.eep,.flash,.rom,.dump,.hex,.ihex,.s19,.s28,.s37,.srec,.mot,application/octet-stream">
+  <p id="ecuProject" class="muted small">Можна завантажити один файл до 32 МБ або два дампи для порівняння.</p>
+  <details>
+   <summary>Байтовий технічний звіт</summary>
+   <pre id="ecuResult" class="ecuDump"></pre>
+  </details>
+  <details><summary>Змінені байти й адресні ділянки</summary><pre id="ecuComparison" class="ecuDump"></pre></details>
+  <label for="ecuQuery">Дані автомобіля, блок ЕБУ, SW/HW або номер Bosch</label>
+  <input id="ecuQuery" type="text" class="v3field" placeholder="Наприклад: Mercedes OM646 Bosch EDC16 1037376898">
+  <div class="actions">
+   <button class="secondary" id="ecuFind">Знайти технічні форуми</button>
+   <button class="secondary" id="ecuDeepFind">Глибокий вебпошук через ШІ</button>
+  </div>
+  <div id="ecuSources" class="ecuSources"></div>
+  <p id="ecuSearchNote" class="muted small"></p>
+  <details><summary>Результат пошуку з Puter</summary><pre id="ecuResearch" class="ecuDump">Пошук ще не виконувався.</pre></details>
+  <label for="ecuUserTask">Що потрібно з'ясувати про прошивку?</label>
+  <input id="ecuUserTask" type="text" class="v3field" placeholder="Порівняй із заводським дампом, досліди SW ID, припусти можливі зміни">
+  <div class="actions">
+   <button class="primary" id="ecuToAI">Передати технічний звіт раді трьох ШІ</button>
+   <button class="secondary" id="ecuSave">Зберегти в проєкт</button>
+   <button class="secondary" id="ecuCopy">Копіювати звіт</button>
+  </div>
+  <div class="notice warning">У цьому модулі немає прошивання ЕБУ, редагування карт або достовірної перевірки фірмових checksum. Пошукові результати й форуми потребують перевірки; деякі теми доступні лише авторизованим учасникам. Повний двійковий дамп не передається ШІ автоматично.</div>
  </section>
  <section class="card" id="account">
   <div class="cardhead"><h2>Підключення</h2><span class="badge" id="accountBadge">Перевірка…</span></div>
@@ -856,6 +892,7 @@ $('openBrowser').addEventListener('click',()=>{
 });
 updateModeButton();
 if(window.TriMindV3)window.TriMindV3.init();
+if(window.TriMindECU)window.TriMindECU.init();
 window.TriMindRefreshHistory=showHistory;
 showHistory();
 if(window.puter&&puter.auth)checkAuth();

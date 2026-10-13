@@ -89,10 +89,10 @@ public class PuterActivity extends Activity {
             @Override public WebResourceResponse shouldInterceptRequest(WebView webView, WebResourceRequest request) {
                 Uri uri=request.getUrl();
                 if ("https".equals(uri.getScheme()) && "trimind.local".equals(uri.getHost())
-                        && "/v3.js".equals(uri.getPath())) {
+                        && ("/v3.js".equals(uri.getPath()) || "/ecu.js".equals(uri.getPath()))) {
                     try {
                         return new WebResourceResponse("application/javascript", "UTF-8",
-                                getAssets().open("v3.js"));
+                                getAssets().open(uri.getPath().substring(1)));
                     } catch (Exception ignored) {
                         return new WebResourceResponse("text/plain", "UTF-8",
                             new java.io.ByteArrayInputStream(new byte[0]));
