@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#102849">
+<title>TriMind ECU</title>
+<style>
+:root{color-scheme:light;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color:#132540;background:#f2f5fb}
+*{box-sizing:border-box}body{margin:0;padding:0 0 35px}
+main{max-width:650px;margin:auto;padding:20px 16px}
+header{background:#102849;color:#fff;padding:22px 18px 25px;border-radius:0 0 22px 22px;text-align:center}
+.logo{font-weight:780;font-size:24px;letter-spacing:-.5px}
+.sub{font-size:13px;opacity:.83;margin-top:5px}
+.card{margin-top:16px;background:#fff;border:1px solid #e0e6f1;border-radius:18px;padding:19px 17px;box-shadow:0 2px 12px rgba(16,40,73,.05)}
+.step{display:flex;align-items:center;gap:9px;font-size:16px;font-weight:750;margin:0 0 10px}
+.number{display:grid;place-items:center;background:#ebf1ff;color:#174dac;border-radius:50%;width:28px;height:28px;font-size:15px}
+input[type=file]{display:block;width:100%;max-width:100%;padding:13px 9px;border:1px dashed #8ca2c4;border-radius:12px;background:#f8fbff;color:#173a67;font-size:14px}
+.filename{margin:8px 0 0;color:#52637a;font-size:13px;overflow-wrap:anywhere}
+.hint{color:#596b82;font-size:13px;line-height:1.45}
+button{font:inherit;cursor:pointer}
+.action{display:block;width:100%;border:0;border-radius:13px;background:#1e5bdd;color:white;padding:17px 12px;font-size:17px;font-weight:750}
+.action[disabled]{opacity:.55;cursor:wait}
+.login{display:block;width:100%;border:1px solid #aac1ef;background:#eaf1ff;color:#174caa;border-radius:12px;padding:11px 12px;font-weight:650}
+.minor{background:transparent;border:1px solid #cbd6ea;color:#194472;border-radius:10px;padding:9px 13px;font-size:13px}
+#authRow{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:7px 3px;color:#61718a;font-size:13px}
+#authButton{width:auto;min-width:103px;display:none}
+#progress,#answerCard{display:none}
+#progress{font-size:14px;color:#315780;text-align:center;margin-top:15px}
+.spinner{height:15px;width:15px;border:2px solid #b3c7f2;border-top-color:#2a62c7;border-radius:50%;display:inline-block;animation:rotate .85s linear infinite;vertical-align:-3px;margin-right:7px}
+@keyframes rotate{to{transform:rotate(360deg)}}
+#answerCard{border:1px solid #c6d7f0}
+.answerhead{display:flex;justify-content:space-between;align-items:center;gap:6px;margin-bottom:12px}
+h2{font-size:19px;margin:0}
+#verdict{font-size:12px;border-radius:30px;padding:6px 10px;background:#eaf2fc;color:#174b8b;white-space:nowrap}
+#verdict.warn{background:#fff2d9;color:#784608}
+#verdict.bad{background:#ffebe8;color:#9e2821}
+#answer{white-space:pre-wrap;overflow-wrap:anywhere;font-size:15px;line-height:1.56;color:#152d4c}
+#details{font-size:12px;margin-top:13px;padding-top:12px;border-top:1px solid #e1e7f3;color:#64748a;overflow-wrap:anywhere}
+#copyButton{margin-top:14px}
+.footer{text-align:center;color:#728096;font-size:12px;margin-top:16px;line-height:1.5}
+a{color:#205bd2}
+</style>
+<script src="https://trimind.local/ecu.js"></script>
+<script src="https://trimind.local/ecu_core.js"></script>
+<script src="https://trimind.local/simple.js"></script>
+<script src="https://js.puter.com/v2/" onerror="window.puterLoadError=true"></script>
+</head>
+<body>
+<header><div class="logo">TriMind ECU</div><div class="sub">Два файли. Три ШІ. Одна відповідь.</div></header>
+<main>
+<div id="authRow"><span id="authStatus">Перевірка підключення…</span><button id="authButton" class="login">Увійти</button></div>
+<div class="card">
+  <label class="step" for="fileOne"><span class="number">1</span>Файл 1 — прошивка</label>
+  <input type="file" id="fileOne" accept=".bin,.ori,.mod,.eep,.flash,.rom,.dump,.hex,.ihex,.s19,.s28,.s37,.srec,.mot,application/octet-stream">
+  <div class="filename" id="fileOneName">Оберіть основний файл ЕБУ</div>
+</div>
+<div class="card">
+  <label class="step" for="fileTwo"><span class="number">2</span>Файл 2 — для порівняння</label>
+  <input type="file" id="fileTwo" accept=".bin,.ori,.mod,.eep,.flash,.rom,.dump,.hex,.ihex,.s19,.s28,.s37,.srec,.mot,application/octet-stream">
+  <div class="filename" id="fileTwoName">Необов'язково: можна аналізувати один файл</div>
+</div>
+<div class="card">
+  <button id="analyze" class="action">Аналізувати трьома ШІ</button>
+  <div class="hint" style="margin-top:11px">Дані прошивок аналізуються на телефоні. Трьом ШІ передається технічний звіт, а не самі BIN-файли. Потрібен інтернет і Puter; запити можуть витрачати ліміт.</div>
+  <div id="progress" role="status" aria-live="polite"><span class="spinner"></span><span id="progressText">Готую аналіз…</span></div>
+</div>
+<div class="card" id="answerCard" aria-live="polite">
+ <div class="answerhead"><h2>Готова відповідь</h2><span id="verdict">Очікування</span></div>
+ <div id="answer"></div>
+ <div id="details"></div>
+ <button class="minor" id="copyButton">Копіювати відповідь</button>
+</div>
+<p class="footer">ШІ можуть помилятися. Висновок не підтверджує безпечність запису прошивки в ЕБУ та не замінює заводську документацію.</p>
+</main>
+</body>
+</html>

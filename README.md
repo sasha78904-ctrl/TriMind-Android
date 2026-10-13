@@ -1,4 +1,4 @@
-# TriMind AI 4.0 — Android
+# TriMind AI 4.1 — Android
 
 Three independent AI responses, one properly qualified synthesis.
 
@@ -83,3 +83,19 @@ Read-only features added:
 Not delivered yet: a licensed verified OEM firmware corpus, universal proprietary checksum algorithms, complete XDF/A2L conversion support, running disassemblers such as Ghidra on Android, physical OBD/UDS hardware integration, or permanently running server-based crawlers of every forum. These require datasets, vendor rights, hardware, maintained infrastructure and substantially more work. The APK build alone is not evidence of successful live Puter/GitHub integration on every device. Proprietary user firmware should not be committed to a public repo.
 
 Reference standards: ASAM MCD-2 MC at https://www.asam.net/standards/detail/mcd-2-mc/ and TunerPro XDF format discussions at https://forum.tunerpro.net/. No proprietary datasets or tuning maps are redistributed.
+
+
+## TriMind AI 4.1 — Simplified ECU Start Screen
+
+**Default Android startup** is now \`simple.html\`, a minimal user interface:
+- **File 1**: ECU firmware (required).
+- **File 2**: ECU firmware reference/comparison (optional).
+- **Analyze with 3 AI**: local read-only extraction from 1/2 firmware files, independent Puter requests to OpenAI, Google and Anthropic, a second cross-critique round from all three, one provisional written answer, three independent verdicts, and **only one final answer** shown to the user.
+- Provider responses and debates are never shown as separate cluttered answer cards. Requested model identifiers and verdicts appear as a small technical status footer.
+- The app does not call the synthesis "3/3 approved" unless all three independently answered, all three critiques succeeded, and all three votes explicitly parsed as \`VERDICT: AGREE\`. If providers have reservations, the **same single answer** includes the concerns; if an essential response/vote is absent, the screen explicitly reports **incomplete** rather than faking a completed 3-AI answer.
+- The BIN bytes are never sent to LLMs. AI receives a *text-only local forensic report* (SHA-256, size, printable IDs, entropy, delta addresses/count). Original files are not modified and not uploaded. If the user is not signed into Puter, the app displays the local facts and asks them to sign in.
+- Up to 32 MiB per input, with supported BIN, ORI, MOD, EEP, FLASH, ROM, DUMP, Intel HEX and Motorola S-record extensions.
+- Forensic interpretation is qualified: raw BIN addresses assume base zero, and the app does not determine firmware originality, emissions-related changes, maps, proprietary OEM checksums or safe flashing by itself.
+- Research, reference database, XDF/A2L and diagnostic features remain in the source for further development, but the user requested **no extra UI** so they are hidden from the default simple screen.
+
+The feature is tested with a mocked Puter SDK in GitHub Actions; actual remote provider responses, model availability, billing, and file picker experience need testing on a real Android device.

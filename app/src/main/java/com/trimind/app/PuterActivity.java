@@ -51,7 +51,7 @@ public class PuterActivity extends Activity {
         configure(view);
         setContentView(view, new ViewGroup.LayoutParams(-1, -1));
         try {
-            byte[] bytes = readAsset("index.html");
+            byte[] bytes = readAsset("simple.html");
             view.loadDataWithBaseURL(ORIGIN,
                     new String(bytes, StandardCharsets.UTF_8), "text/html", "UTF-8", null);
         } catch (Exception e) {
@@ -94,7 +94,8 @@ public class PuterActivity extends Activity {
                 if ("https".equals(uri.getScheme()) && "trimind.local".equals(uri.getHost())
                         && ("/v3.js".equals(uri.getPath()) || "/ecu.js".equals(uri.getPath())
                             || "/ecu_core.js".equals(uri.getPath())
-                            || "/ecu_pro.js".equals(uri.getPath()))) {
+                            || "/ecu_pro.js".equals(uri.getPath())
+                            || "/simple.js".equals(uri.getPath()))) {
                     try {
                         return new WebResourceResponse("application/javascript", "UTF-8",
                                 getAssets().open(uri.getPath().substring(1)));
