@@ -1,4 +1,4 @@
-# TriMind AI 2.3 — Android
+# TriMind AI 3.0 — Android
 
 Three independent AI responses, one properly qualified synthesis.
 
@@ -43,3 +43,16 @@ The default **Debate** mode conducts a transparent structured exchange (not thre
 The UI exposes review transcripts, candidate decision, and votes. It displays **agreed by all three** only when all 3 answered, all 3 completed a critique, and all 3 explicitly voted AGREE. Missing, malformed, or dissenting votes never count as agreement. No AI consensus implies external truth.
 
 Normal use requires 10 calls, and there is a hard cap of **14 attempted Puter AI requests per debate** including retries. Puter charges or depletes account allowance according to the selected models; when the cap is reached, the app returns the incomplete/disputed result rather than sending additional queries. Use **Quick analysis** to reduce costs. History stores clipped transcripts and vote decisions locally (up to 12 sessions). Documents/photos themselves are not stored in history and are sent only on the first round.
+
+## TriMind 3.0 — Research Workspace (5 modules)
+**Actual capabilities and limits:**
+1. **External source collection:** Fetches live public search results from Wikimedia Action API (Ukrainian and English Wikipedia) and Crossref publication metadata. Shows direct HTTPS URLs, titles and excerpts in a separate evidence ledger, never generates links. These are NOT exhaustive web search, legal databases, a primary source guarantee, or fact verification. User may provide custom search keywords.
+2. **Multimodal documents and media:** Keeps existing photo/PDF/Word/Excel/text upload. Adds optional Puter `ai.img2txt` OCR for selected scans, Puter `ai.speech2txt` for MP3/WAV/M4A/OGG, partial local text extraction for TXT/CSV/JSON/MD, and sampling three still frames from short MP4/WebM files. Video audio and unselected frames are not analyzed. If no selected material can be processed, the app reports a failure rather than pretending the model analyzed it. Up to 4 originals, each up to 20 MiB (40 MiB total). Format support varies by provider.
+3. **Structured independent roles:** OpenAI starts as systems analyst, Gemini as evidence checker, Claude as skeptical reviewer. Existing independent responses, cross-review, candidate decision and separate votes remain. Consensus is not proof.
+4. **Per-project local knowledge:** Create up to 20 projects, each with up to 80 notes/results. Optional save of the final output, manually written notes, limited keyword-based retrieval relevant to future questions. JSON backup via clipboard and JSON file import; not encrypted at rest beyond Android app sandbox. No automatic cloud sync. Check data handling before including sensitive documents.
+5. **Scheduled source comparison (foreground):** Daily/weekly checks compare URL sets from Wikipedia/Crossref. A change in search results does NOT prove a new event. When the app is opened it checks due topics using real requests; a native Android AlarmManager notification can remind you to open it. **AI/Web research is NOT executed while the app is fully closed.** Continuous background monitoring would require a separately deployed trusted backend and scheduler.
+
+No secret service credentials in public GitHub code. Puter user login is required; Puter AI/OCR/transcription may consume account credit. Speech/vision requests are not included in the in-app 14-call debate-only budget. Google/Claude/OpenAI model availability can change over time.
+
+### Build verification
+GitHub Actions compiles the Android APK and runs source syntax tests, existing debate/attachment mocks, and v3 deterministic tests with mock Wikimedia/Crossref and speech/OCR responses. Real device camera/file selection, service quotas, provider model behavior, Android permission delivery and Puter login require live testing on the user's Android phone.

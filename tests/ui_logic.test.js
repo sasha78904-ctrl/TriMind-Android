@@ -90,7 +90,7 @@ async function main(){
  assert.equal(t.fileValid(mockImage),'');
  assert.equal(t.fileValid(mockPdf),'');
  assert.match(t.fileValid({...mockPdf,name:'malware.exe'}),/не підтримується/);
- assert.match(t.fileValid({...mockPdf,size:16*1024*1024}),/завеликий/);
+ assert.match(t.fileValid({...mockPdf,size:21*1024*1024}),/завеликий/);
  const imageCtx=await t.prepareAttachments([mockImage]);
  const imageArgs=t.requestArgs('Analyze photo',imageCtx,{model:'gpt-5.4-nano'});
  assert.equal(imageArgs[0],'Analyze photo');

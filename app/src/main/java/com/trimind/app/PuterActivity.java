@@ -15,6 +15,7 @@ import android.webkit.JavascriptInterface;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceRequest;
+import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -85,6 +86,20 @@ public class PuterActivity extends Activity {
 
         web.addJavascriptInterface(new Bridge(), "TriMindAndroid");
         web.setWebViewClient(new WebViewClient() {
+            @Override public WebResourceResponse shouldInterceptRequest(WebView webView, WebResourceRequest request) {
+                Uri uri=request.getUrl();
+                if ("https".equals(uri.getScheme()) && "trimind.local".equals(uri.getHost())
+                        && "/v3.js".equals(uri.getPath())) {
+                    try {
+                        return new WebResourceResponse("application/javascript", "UTF-8",
+                                getAssets().open("v3.js"));
+                    } catch (Exception ignored) {
+                        return new WebResourceResponse("text/plain", "UTF-8",
+                            new java.io.ByteArrayInputStream(new byte[0]));
+                    }
+                }
+                return super.shouldInterceptRequest(webView,request);
+            }
             @Override public boolean shouldOverrideUrlLoading(WebView v, WebResourceRequest req) {
                 Uri url = req.getUrl();
                 String scheme = url.getScheme();
@@ -113,6 +128,8 @@ public class PuterActivity extends Activity {
                         params.getMode() == FileChooserParams.MODE_OPEN_MULTIPLE);
                 picker.putExtra(Intent.EXTRA_MIME_TYPES, new String[]{
                         "image/jpeg", "image/png", "image/webp",
+                        "audio/mpeg", "audio/wav", "audio/mp4", "audio/ogg",
+                        "video/mp4", "video/webm",
                         "application/pdf", "text/plain", "text/csv",
                         "application/json",
                         "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
@@ -230,6 +247,24 @@ public class PuterActivity extends Activity {
                 clipboard.setPrimaryClip(ClipData.newPlainText("TriMind", value));
                 Toast.makeText(PuterActivity.this, "Скопійовано", Toast.LENGTH_SHORT).show();
             });
+        }
+        @JavascriptInterface public void scheduleMonitorReminder(long dueEpochMs) {
+            runOnUiThread(() -> {
+                try {
+                    if (android.os.Build.VERSION.SDK_INT >= 33 &&
+                        checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS)
+                            != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                        requestPermissions(new String[]{android.Manifest.permission.POST_NOTIFICATIONS}, 6821);
+                    }
+                    MonitorReceiver.schedule(PuterActivity.this, dueEpochMs);
+                } catch (Exception e) {
+                    Toast.makeText(PuterActivity.this,
+                       "Не вдалося запланувати нагадування", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+        @JavascriptInterface public void cancelMonitorReminder() {
+            runOnUiThread(() -> MonitorReceiver.cancel(PuterActivity.this));
         }
         @JavascriptInterface public void openBrowser() {
             runOnUiThread(() -> external(Uri.parse("https://puter.com/")));

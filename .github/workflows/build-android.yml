@@ -35,6 +35,10 @@ jobs:
           node --check /tmp/trimind-script.js
       - name: Test attachments, model recovery and AI deliberation
         run: node tests/ui_logic.test.js
+      - name: Validate research, local memory and monitoring
+        run: |
+          node --check app/src/main/assets/v3.js
+          node tests/v3_logic.test.js
       - name: Install Android SDK packages
         run: |
           SDKMANAGER="$(find "$ANDROID_HOME/cmdline-tools" -type f -name sdkmanager | head -n 1)"

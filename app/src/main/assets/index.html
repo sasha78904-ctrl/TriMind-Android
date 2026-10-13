@@ -27,7 +27,10 @@ p{margin:6px 0 12px}
 .column{display:flex;align-items:center;gap:9px}
 .muted{color:var(--muted);font-size:13px}
 .small{font-size:12px}
-button,select,textarea{font:inherit}
+button,select,textarea,input{font:inherit}
+.v3field{width:100%;border:1.5px solid #d4deed;border-radius:11px;padding:10px;background:#fff;color:var(--ink)}
+#watchList .discussionEntry{margin:8px 0}#sourceLedger a{color:#174eb8;overflow-wrap:anywhere}
+#watchUpdates{font-size:13px;color:#9b5d13}
 button{border:0;border-radius:12px;padding:12px 14px;background:#edf2fc;color:#173971;font-weight:700;cursor:pointer}
 button.primary{background:var(--blue);color:white;width:100%;font-size:16px;box-shadow:0 5px 12px #235de02a;padding:14px 18px}
 button.secondary{border:1px solid #cbd8ee;background:white}
@@ -79,6 +82,7 @@ details summary{font-weight:700;cursor:pointer;padding:7px 0}
 #waiter span{display:block;width:32%;height:100%;background:#346de8;animation:slide 1.3s ease-in-out infinite alternate}
 @keyframes slide{from{transform:translateX(0)}to{transform:translateX(210%)}}
 </style>
+<script src="https://trimind.local/v3.js"></script>
 <script src="https://js.puter.com/v2/" onerror="window.sdkFailed=true"></script>
 </head>
 <body>
@@ -87,6 +91,19 @@ details summary{font-weight:700;cursor:pointer;padding:7px 0}
  <div id="subtitle">Версія 2.0 · Без окремих API-ключів</div>
 </header>
 <main>
+ <section class="card" id="projectCard">
+  <h2>📚 Проєкти й база знань</h2>
+  <p class="muted small">Дані зберігаються в пам’яті застосунку на телефоні, без додаткового шифрування.</p>
+  <div class="inline"><select id="projectSelect" aria-label="Активний проєкт" style="flex:1"></select></div>
+  <div class="inline" style="margin-top:9px"><input class="v3field" id="newProjectName" placeholder="Назва нового проєкту" maxlength="70" style="flex:1"><button class="secondary" id="createProject">Створити</button></div>
+  <details><summary>Нотатки та матеріали проєкту</summary>
+   <textarea id="noteText" placeholder="Нотатка або факти для наступних досліджень" style="min-height:80px"></textarea>
+   <div class="actions"><button class="secondary" id="saveNote">Зберегти нотатку</button><button class="secondary" id="saveResult">Зберегти висновок</button><button class="ghost" id="exportProject">Скопіювати JSON-копію</button></div>
+   <p class="muted small">Після копіювання збережи JSON у безпечному місці. Імпорт — із раніше збереженого файлу.</p>
+   <input id="importProject" type="file" accept=".json,application/json">
+   <p id="projectStats" class="muted small"></p><div id="projectNotes"></div>
+  </details>
+ </section>
  <section class="card" id="account">
   <div class="cardhead"><h2>Підключення</h2><span class="badge" id="accountBadge">Перевірка…</span></div>
   <p class="muted" id="accountInfo">Для роботи потрібен інтернет і єдиний обліковий запис Puter. Три API-ключі створювати не потрібно.</p>
@@ -95,15 +112,23 @@ details summary{font-weight:700;cursor:pointer;padding:7px 0}
  </section>
  <section class="card">
   <h2>Постав завдання</h2>
-  <textarea id="prompt" placeholder="Наприклад: перевір це фото несправності або поясни завантажений PDF-документ."></textarea>
+  <textarea id="prompt" placeholder="Постав завдання, додай фото або файли, обери проєкт та перевірку джерел."></textarea>
+  <div class="notice">
+   <label style="margin:0"><input type="checkbox" id="researchToggle" checked> Пошук доступних публічних джерел</label>
+   <input id="researchQuery" class="v3field" style="margin-top:8px" placeholder="Пошукові слова (необов'язково)">
+   <div class="muted small" id="v3ResearchHint">Доступні Wikipedia та Crossref. Це не загальний пошук усім інтернетом.</div>
+   <details><summary>Знайдені джерела</summary><div id="sourceLedger"></div></details>
+  </div>
   <div class="attachmentRow">
    <button type="button" class="secondary" id="addPhoto">📷 Фото з галереї</button>
    <button type="button" class="secondary" id="addFile">📎 Додати документ</button>
   </div>
-  <input type="file" id="attachmentInput" multiple accept="image/jpeg,image/png,image/webp,application/pdf,.pdf,.doc,.docx,.xls,.xlsx,.txt,.csv,.json,.md">
+  <input type="file" id="attachmentInput" multiple accept="image/jpeg,image/png,image/webp,application/pdf,.pdf,.doc,.docx,.xls,.xlsx,.txt,.csv,.json,.md,.mp3,.wav,.m4a,.ogg,.mp4,.webm,audio/*,video/*">
   <div id="attachmentPreview" class="attachmentPreview"></div>
-  <p id="attachmentHint" class="muted small">Фото: JPG, PNG, WebP. Документи: PDF, Word, Excel, TXT, CSV, JSON, MD. До 4 файлів, максимум 15 МБ кожен та 25 МБ разом.</p>
-  <p class="muted small">Вкладення передаються через Puter до моделей ШІ. Документи тимчасово розміщуються у твоєму сховищі Puter і видаляються після аналізу (за можливості). Файли не додаються до історії на телефоні.</p>
+  <label class="small"><input type="checkbox" id="ocrToggle"> Витягнути текст із фото/сканів через Puter OCR (додаткові витрати)</label>
+  <div id="v3Status" class="muted small" style="margin:10px 0"></div>
+  <p id="attachmentHint" class="muted small">Фото, PDF/Word/Excel/TXT/CSV, аудіо MP3/WAV/M4A/OGG та короткі відео MP4/WebM. До 4 файлів: 20 МБ кожен, 40 МБ разом.</p>
+  <p class="muted small">Аудіо транскрибується Puter, відео аналізується за вибраними кадрами (не повне відео). Деякі файли не підтримуються конкретною моделлю. Тимчасові копії видаляються за можливості.</p>
   <div class="inline">
    <label for="quality">Режим аналізу</label>
    <select id="quality"><option value="economy">Збалансований · дешевші моделі</option><option value="quality">Глибокий · дорожчі моделі</option></select>
@@ -155,6 +180,16 @@ details summary{font-weight:700;cursor:pointer;padding:7px 0}
    <div class="fieldmeta" id="model-anthropic"></div><div class="answer" id="answer-anthropic">Очікування…</div>
   </div>
   <div class="actions"><button class="secondary" id="copyAll">Скопіювати все</button></div>
+ </section>
+ <section class="card" id="monitorCard">
+  <h2>👁 Моніторинг джерел</h2>
+  <p class="muted small">Порівнює результати Wikipedia і Crossref під час відкриття програми. Android нагадує про перевірку, але не виконує фоновий пошук.</p>
+  <input class="v3field" id="watchQuery" maxlength="130" placeholder="Тема: тахограф, ADR, закон, наукова публікація">
+  <div class="inline" style="margin-top:8px"><label for="watchInterval">Повторювати</label>
+   <select id="watchInterval"><option value="1">Щодня</option><option value="7">Щотижня</option></select>
+   <button class="secondary" id="addWatch">Додати</button></div>
+  <div class="actions"><button class="secondary" id="checkWatches">Перевірити прострочені</button></div>
+  <div id="watchUpdates"></div><div id="watchList"></div>
  </section>
  <section class="card">
    <details><summary>Історія запитань на цьому телефоні</summary>
@@ -265,6 +300,7 @@ async function checkAuth(){
    status('good','Підключено');$('signInButton').textContent='Обліковий запис Puter підключено';$('signInButton').disabled=true;
    $('accountInfo').textContent='Можна ставити питання без окремих ключів OpenAI, Gemini і Claude.';
    loadModels();
+   if(window.TriMindV3)window.TriMindV3.onAuth();
   } else {
    status('warn','Потрібен вхід');$('signInButton').disabled=false;$('signInButton').textContent='Підключити Puter · один раз';
   }
@@ -320,14 +356,14 @@ function modelList(provider){
  return selected.slice(0,5);
 }
 
-const FILE_LIMIT=4, MAX_FILE_BYTES=15*1024*1024, MAX_TOTAL_BYTES=25*1024*1024;
-const EXTENSIONS=/\.(jpe?g|png|webp|pdf|doc|docx|xls|xlsx|txt|csv|json|md)$/i;
+const FILE_LIMIT=4, MAX_FILE_BYTES=20*1024*1024, MAX_TOTAL_BYTES=40*1024*1024;
+const EXTENSIONS=/\.(jpe?g|png|webp|pdf|doc|docx|xls|xlsx|txt|csv|json|md|mp3|wav|m4a|ogg|mp4|webm)$/i;
 const isImage=file=>/^image\/(jpeg|png|webp)$/i.test(file.type||'')||/\.(jpg|jpeg|png|webp)$/i.test(file.name||'');
 const fileKind=file=>isImage(file)?'Фото':'Документ';
 function fileValid(file){
  if(!file||!EXTENSIONS.test(file.name||''))return 'Цей формат не підтримується: '+(file&&file.name||'невідомий');
  if(!Number.isFinite(file.size)||file.size<1)return 'Файл порожній або його розмір невідомий: '+file.name;
- if(file.size>MAX_FILE_BYTES)return 'Файл завеликий (понад 15 МБ): '+file.name;
+ if(file.size>MAX_FILE_BYTES)return 'Файл завеликий (понад 20 МБ): '+file.name;
  return '';
 }
 function addAttachments(files){
@@ -339,7 +375,7 @@ function addAttachments(files){
   if(attachments.length>=FILE_LIMIT){alert('Можна додати щонайбільше 4 файли.');break;}
   if(attachments.some(item=>item.file.name===file.name&&item.file.size===file.size&&item.file.lastModified===file.lastModified))continue;
   const bytes=attachments.reduce((sum,item)=>sum+item.file.size,0)+file.size;
-  if(bytes>MAX_TOTAL_BYTES){alert('Загальний розмір вкладень не може перевищувати 25 МБ.');break;}
+  if(bytes>MAX_TOTAL_BYTES){alert('Загальний розмір вкладень не може перевищувати 40 МБ.');break;}
   const url=isImage(file)?URL.createObjectURL(file):null;
   attachments.push({file,url});
  }
@@ -443,8 +479,9 @@ async function queryWithFallback(provider,prompt,modelChoices,render,context=nul
  }
  throw lastError||new Error('Моделі недоступні');
 }
-function independentPrompt(question){
- return 'Відповідай українською. Ти незалежний експерт. Розв’яжи завдання практично, структуровано й точно. '+
+function independentPrompt(question,provider){
+ return (window.TriMindV3?window.TriMindV3.rolePrefix(provider):'')+
+ 'Відповідай українською. Ти незалежний експерт. Розв’яжи завдання практично, структуровано й точно. '+
  'Не вигадуй актуальні джерела, перевірки, правові норми, ціни чи події. Якщо щось потребує перевірки, прямо скажи про це.\n\nЗАВДАННЯ:\n'+question;
 }
 function synthesisPrompt(question,entries){
@@ -460,7 +497,7 @@ async function runOne(provider,question,context=null,budget=null){
  const list=modelList(provider);
  renderAnswer(provider,'Отримую відповідь…','busy');
  try{
-  const response=await queryWithFallback(provider,independentPrompt(question),list,(model,attempt)=>{
+  const response=await queryWithFallback(provider,independentPrompt(question,provider),list,(model,attempt)=>{
    renderModel(provider,model+' · спроба '+attempt);
   },context,budget);
   results[provider]=response;
@@ -665,15 +702,17 @@ async function ask(){
  $('results').scrollIntoView({behavior:'smooth',block:'start'});
  try{
   $('progressText').textContent=runFiles.length?'Підготовка й завантаження вкладень…':'Звертаюся до моделей…';
-  const context=await prepareAttachments(runFiles);
+  const enriched=window.TriMindV3?await window.TriMindV3.beforeAsk(question,runFiles):
+    {prompt:question,uploadFiles:runFiles,sources:[],projectId:'general'};
+  $('progressText').textContent='Готую матеріали для трьох ШІ…';
+  const context=await prepareAttachments(enriched.uploadFiles);
   try{
-   $('progressText').textContent='Аналіз фото та документів трьома моделями…';
-   await Promise.all(groups.map(k=>runOne(k,question,context,budget)));
+   await Promise.all(groups.map(k=>runOne(k,enriched.prompt,context,budget)));
   }finally{await cleanupAttachments(context);}
   const entries=groups.map(k=>results[k]).filter(x=>x&&x.text);
   $('progressText').textContent=mode==='dialogue'?'Починаю діалог ШІ…':'Формую висновок…';
-  const analysis=mode==='dialogue'?await deliberate(question,entries,budget):
-     await createSummary(question,entries);
+  const analysis=mode==='dialogue'?await deliberate(enriched.prompt,entries,budget):
+     await createSummary(enriched.prompt,entries);
   if(mode==='quick')renderVotes([],null);
   renderRich('summary',analysis.summary);
   $('summaryBadge').textContent=analysis.badge;
@@ -682,6 +721,7 @@ async function ask(){
    attachmentNames:runFiles.map(f=>f.name),responses:{...results},
    votes:analysis.votes||[],debate:analysis.debate||[],
    budgetUsed:budget?budget.used:0};
+  if(window.TriMindV3)window.TriMindV3.afterRun(latest,enriched);
   lastRunFiles=runFiles.slice();
   lastRunAt=latest.at;
   history.unshift(latest);history=history.slice(0,12);storeHistory();showHistory();
@@ -742,7 +782,8 @@ function storeHistory(){
 function showHistory(){
  const list=$('historyList');list.replaceChildren();
  if(!history.length){list.textContent='Ще немає записів.';return;}
- history.forEach((item,index)=>{
+ history.filter(item=>!window.TriMindV3||
+  (item.projectId||'general')===window.TriMindV3.getProjectId()).forEach((item,index)=>{
   const button=document.createElement('button');
   const strong=document.createElement('strong');strong.textContent=(item.question||'').slice(0,120);
   const subtitle=document.createElement('span');subtitle.textContent=new Date(item.at).toLocaleString('uk-UA')+' · '+(item.badge||'')+
@@ -758,6 +799,7 @@ function showHistory(){
    $('prompt').value=item.question;
    $('results').classList.remove('hidden');
    renderRich('summary',item.summary);
+   if(window.TriMindV3)window.TriMindV3.renderSources(item.sources||[]);
    $('summaryBadge').textContent=item.badge;
    groups.forEach(k=>{
     const result=results[k]||{};
@@ -789,7 +831,7 @@ $('copyDebate').addEventListener('click',()=>copy(debateEntries.map(x=>
  x.round+' · '+NAMES[x.provider]+'\n'+x.text).join('\n\n')));
 
 $('addPhoto').addEventListener('click',()=>{$('attachmentInput').accept='image/jpeg,image/png,image/webp';$('attachmentInput').click();});
-$('addFile').addEventListener('click',()=>{$('attachmentInput').accept='.pdf,.doc,.docx,.xls,.xlsx,.txt,.csv,.json,.md,image/jpeg,image/png,image/webp';$('attachmentInput').click();});
+$('addFile').addEventListener('click',()=>{$('attachmentInput').accept='.pdf,.doc,.docx,.xls,.xlsx,.txt,.csv,.json,.md,.mp3,.wav,.m4a,.ogg,.mp4,.webm,image/jpeg,image/png,image/webp,audio/*,video/*';$('attachmentInput').click();});
 $('attachmentInput').addEventListener('change',event=>{
  addAttachments(event.target.files);
  event.target.value='';
@@ -813,6 +855,8 @@ $('openBrowser').addEventListener('click',()=>{
  else window.open('https://puter.com/','_blank');
 });
 updateModeButton();
+if(window.TriMindV3)window.TriMindV3.init();
+window.TriMindRefreshHistory=showHistory;
 showHistory();
 if(window.puter&&puter.auth)checkAuth();
 else{
