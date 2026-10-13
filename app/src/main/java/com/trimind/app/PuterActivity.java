@@ -132,17 +132,7 @@ public class PuterActivity extends Activity {
                 picker.setType("*/*");
                 picker.putExtra(Intent.EXTRA_ALLOW_MULTIPLE,
                         params.getMode() == FileChooserParams.MODE_OPEN_MULTIPLE);
-                picker.putExtra(Intent.EXTRA_MIME_TYPES, new String[]{
-                        "image/jpeg", "image/png", "image/webp",
-                        "audio/mpeg", "audio/wav", "audio/mp4", "audio/ogg",
-                        "video/mp4", "video/webm",
-                        "application/pdf", "text/plain", "text/csv",
-                        "application/json",
-                        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                        "application/msword", "application/vnd.ms-excel",
-                        "application/octet-stream"
-                });
+                // Show all document types; the ECU byte parser validates the selected file.
                 picker.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
                 try {
                     startActivityForResult(Intent.createChooser(picker,

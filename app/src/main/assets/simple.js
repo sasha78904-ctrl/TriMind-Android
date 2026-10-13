@@ -93,13 +93,30 @@ async function call(provider,prompt,round,errors){
  throw Error(msg);
 }
 function formatBytes(size){return size>=1024*1024?(size/1024/1024).toFixed(2)+' МБ':(size/1024).toFixed(1)+' КБ';}
-function typeFile(file){
+async function prepareFile(file){
  if(!file||!Number.isFinite(file.size)||file.size<=0||file.size>MAX_BYTES)
   throw Error('Кожен файл повинен мати розмір від 1 байта до 32 МБ.');
  const ext=String(file.name||'').match(/\.([a-z0-9]+)$/i)?.[1]?.toLowerCase();
- const valid=['bin','ori','mod','eep','flash','rom','dump','hex','ihex','s19','s28','s37','srec','mot'];
- if(ext&&!valid.includes(ext))throw Error('Непідтримуваний формат: '+file.name);
- return file;
+ const known=['bin','ori','mod','eep','flash','rom','dump','hex','ihex','s19','s28','s37','srec','mot'];
+ if(known.includes(ext))return file;
+ // Firmware dumps frequently have workshop-specific names, e.g. "mers.avtomat.marina".
+ // Inspect a small binary prefix and decode as a raw BIN without changing source bytes.
+ const headerFile=typeof file.slice==='function'?file.slice(0,Math.min(file.size,4096)):file;
+ const header=new Uint8Array(await headerFile.arrayBuffer()).subarray(0,4096);
+ const textStart=String.fromCharCode(...header.slice(0,16));
+ const forbidden=header.length>=4&&(
+   (header[0]===0x50&&header[1]===0x4b&&(header[2]===0x03||header[2]===0x05))|| // ZIP, FRF ZIP container
+   textStart.startsWith('%PDF')||
+   (header[0]===0x89&&textStart.slice(1,4)==='PNG')||
+   (header[0]===0x7f&&textStart.slice(1,4)==='ELF')||
+   (textStart.startsWith('MZ'))||
+   (header[0]===0x1f&&header[1]===0x8b)
+ );
+ if(forbidden)throw Error('Цей файл має формат документа/архіву, а не сирого дампу ECU.');
+ const binary=header.some(v=>v===0||v===255||v<9||v>=128);
+ if(!binary)throw Error('Файл схожий на звичайний текст. Для сирого дампу потрібні бінарні дані.');
+ return {name:(file.name||'firmware')+'.bin',size:file.size,
+  arrayBuffer:()=>file.arrayBuffer(),text:()=>file.text(),originalName:file.name};
 }
 function makeProfile(obj){
  const c=window.TriMindECUCore;
@@ -312,13 +329,16 @@ async function analyze(){
  byId('progress').style.display='block';
  lastRun=null;
  try{
-  typeFile(file1);if(file2)typeFile(file2);
+  const prepared1=await prepareFile(file1);
+  const prepared2=file2?await prepareFile(file2):null;
   if(!window.TriMindECU?.decode||!window.TriMindECUCore?.identify)
    throw Error('Модуль аналізу ECU не завантажився. Перезапусти застосунок.');
   phase('Читаю файл і аналізую байти на телефоні…');
-  const a=await window.TriMindECU.decode(file1);
+  const a=await window.TriMindECU.decode(prepared1);
+  a.name=file1.name;
   phase('Обробляю другий файл…');
-  const b=file2?await window.TriMindECU.decode(file2):null;
+  const b=prepared2?await window.TriMindECU.decode(prepared2):null;
+  if(b)b.name=file2.name;
   const report=reportOf(a,b);
   // A result is never claimed to be from all three if any request fails.
   phase('Перевіряю підключення трьох ШІ…');
@@ -372,7 +392,7 @@ function init(){
  byId('copyButton').addEventListener('click',copyAnswer);
  checkLogin();
 }
-window.TriMindSimple={init,analyze,assess,reportOf,compareBounded,parseVerdict,
+window.TriMindSimple={init,analyze,prepareFile,assess,reportOf,compareBounded,parseVerdict,
  normalize,providerForModel,getLast:()=>lastRun,checkLogin};
 if(typeof document.addEventListener==='function')
  document.addEventListener('DOMContentLoaded',init);

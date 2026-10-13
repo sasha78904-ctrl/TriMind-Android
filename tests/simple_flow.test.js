@@ -57,6 +57,14 @@ function clear(){
  calls=[];failedProvider=null;signedIn=true;voteMode='all';
 }
 async function main(){
+ const marina=file('mers.avtomat.marina',arr);
+ const prepared=await ui.prepareFile(marina);
+ assert.equal(prepared.name,'mers.avtomat.marina.bin');
+ assert.equal(prepared.size,marina.size);
+ assert.deepEqual(new Uint8Array(await prepared.arrayBuffer()).slice(0,64),
+  new Uint8Array(await marina.arrayBuffer()).slice(0,64));
+ await assert.rejects(()=>ui.prepareFile(file('fake.zip',[0x50,0x4b,0x03,0x04,1])),/архіву/);
+ await assert.rejects(()=>ui.prepareFile(file('plain.txt',Buffer.from('Just a text file'))),/текст/);
  assert.equal(ui.parseVerdict('VERDICT: AGREE\nГотово'),'AGREE');
  assert.equal(ui.parseVerdict('Вердикт: AGREE'),'UNKNOWN');
  assert.equal(ui.parseVerdict('VERDICT: AGREE / DISAGREE'),'UNKNOWN');
@@ -77,6 +85,12 @@ async function main(){
  assert.deepEqual(count,{openai:4,google:3,anthropic:3});
  assert(calls.every(x=>typeof x.prompt==='string'&&!x.prompt.includes('[object File]')));
  assert(!element('answer').textContent.includes('VERDICT: AGREE'),'Only one synthesized answer is displayed');
+ clear();element('fileOne').files=[file('mers.avtomat.marina',arr)];
+ element('fileTwo').files=[file('second.calibration',bytesTwo)];
+ await ui.analyze();
+ assert.equal(element('verdict').textContent,'3/3 · схвалили');
+ assert.match(element('answer').textContent,/2 з 1048576/);
+ assert(calls.some(x=>x.prompt.includes('mers.avtomat.marina')));
  clear();voteMode='dissent';
  await ui.analyze();
  assert.equal(element('verdict').textContent,'3/3 · є зауваження');

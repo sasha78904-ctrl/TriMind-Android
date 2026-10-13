@@ -1,4 +1,4 @@
-# TriMind AI 4.1 — Android
+# TriMind AI 4.1.1 — Android
 
 Three independent AI responses, one properly qualified synthesis.
 
@@ -99,3 +99,7 @@ Reference standards: ASAM MCD-2 MC at https://www.asam.net/standards/detail/mcd-
 - Research, reference database, XDF/A2L and diagnostic features remain in the source for further development, but the user requested **no extra UI** so they are hidden from the default simple screen.
 
 The feature is tested with a mocked Puter SDK in GitHub Actions; actual remote provider responses, model availability, billing, and file picker experience need testing on a real Android device.
+
+
+### 4.1.1 — Files with workshop-specific extensions
+Custom-named ECU binary dumps such as `mers.avtomat.marina` can now be selected directly. The Android picker does not filter extensions. Unknown extensions are sampled for binary data and passed to the original local decoder as raw BIN without mutating any input bytes. ZIP/PDF/PNG/ELF/EXE/GZIP and plain-text lookalikes are not silently relabeled. The original filename is preserved in the technical report. Format detection is a heuristic, not proof of OEM authenticity. Regression tests include custom extensions for both file inputs.
