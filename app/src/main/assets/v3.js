@@ -292,10 +292,12 @@ async function extractMedia(files){
      textPieces.push('Витяг із '+file.name+':\n'+chunk.slice(0,18000));
     }catch(e){warnings.push('Текстовий файл '+file.name+' не прочитано локально.');}
    }
-   if(byId('ocrToggle')?.checked && /\.(pdf|jpe?g|png|webp)$/i.test(file.name) &&
+   if(byId('ocrToggle')?.checked && /\.(pdf|jpe?g|png|webp|docx|xlsx)$/i.test(file.name) &&
       puter.ai.img2txt){
     try{
-     const answer=await puter.ai.img2txt(file);
+     const useMistral=/\.(pdf|docx|xlsx|webp)$/i.test(file.name)||file.size>9*1024*1024;
+     const answer=await puter.ai.img2txt(file,useMistral?
+       {model:'mistral-ocr-latest'}:{});
      const ocr=asText(typeof answer==='string'?answer:answer.text||answer.markdown).slice(0,14000);
      if(ocr)textPieces.push('OCR із '+file.name+':\n'+ocr);
     }catch(e){warnings.push('OCR '+file.name+' недоступний: '+asText(e.message));}
