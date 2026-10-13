@@ -34,7 +34,7 @@ function identify(report){
   }
  }
  const idStrings=(report.strings||[]).filter(x=>
-   /\b(?:1037\d{6}|0\s?281\s?\d{3}\s?\d{3}|0281\d{6}|SW[:\s]|HW[:\s]|A\s?\d{10})\b/i.test(x.text))
+   /\b(?:1037\d{6}[A-Za-z0-9/.-]*|0\s?281\s?\d{3}\s?\d{3}|0281\d{6}|SW[:\s]|HW[:\s]|A\s?\d{10})\b/i.test(x.text))
     .slice(0,20).map(x=>({offset:x.offset,value:x.text.slice(0,130)}));
  return {status:candidates.length?'heuristic-family':'unknown',candidates,
   evidence:idStrings,checksumStatus:'OEM checksum НЕ перевірено',
