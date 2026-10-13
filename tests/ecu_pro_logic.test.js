@@ -145,7 +145,7 @@ async function main(){
  pro.init();
  assert.match(node('proIdentity').textContent,/CRC32/);
  assert.match(node('proIdentity').textContent,/HEX-переглядач/);
- assert.match(pro.fullReport(),/не OEM-СЕРТИФІКАТ/);
+ assert.match(pro.fullReport(),/НЕ OEM-СЕРТИФІКАТ/);
  console.log('ECU Pro 4.0: signatures, CRC32, address diff, XDF/A2L, DTC, IndexedDB, and source search tests passed.');
 }
 main().catch(e=>{console.error(e);process.exitCode=1;});
