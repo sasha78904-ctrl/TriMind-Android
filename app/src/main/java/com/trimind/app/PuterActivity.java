@@ -94,7 +94,7 @@ public class PuterActivity extends Activity {
                 if ("https".equals(uri.getScheme()) && "trimind.local".equals(uri.getHost())
                         && ("/v3.js".equals(uri.getPath()) || "/ecu.js".equals(uri.getPath())
                             || "/ecu_core.js".equals(uri.getPath())
-                            || "/ecu_pro.js".equals(uri.getPath())))) {
+                            || "/ecu_pro.js".equals(uri.getPath()))) {
                     try {
                         return new WebResourceResponse("application/javascript", "UTF-8",
                                 getAssets().open(uri.getPath().substring(1)));
