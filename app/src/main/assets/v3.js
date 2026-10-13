@@ -454,6 +454,11 @@ function init(){
     'Пошук джерел вимкнено; відповіді моделей не вважай перевіреними зовнішніми фактами.');
  });
  renderSources([]);scheduleReminder();
+ // While TriMind remains open, run overdue public-source comparisons periodically.
+ // Android may throttle timers when the application is backgrounded.
+ if(typeof setInterval==='function')setInterval(()=>{
+  if(puter?.auth?.isSignedIn)checkDueWatches();
+ },15*60*1000);
 }
 function onAuth(){checkDueWatches();}
 window.TriMindV3={init,beforeAsk,rolePrefix,afterRun,research,renderSources,renderVotes:null,
