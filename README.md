@@ -1,4 +1,4 @@
-# TriMind AI 3.1 — Android
+# TriMind AI 4.0 — Android
 
 Three independent AI responses, one properly qualified synthesis.
 
@@ -67,3 +67,19 @@ This is a local, **read-only static firmware analyzer**, not an ECU flashing or 
 - The button to consult all three AIs inserts the **locally calculated byte report**, not the raw binary, into the existing TriMind chat panel. The user then explicitly starts the multi-AI deliberation. Store a report in the active TriMind project or copy as text.
 - **No editing/patching/flashing, immobilizer bypass, emission-control bypass recipes, or counterfeit OEM checksum verification**. ECU-specific maps, calibration axis interpretation, anti-tuning signatures, proprietary Bosch/Continental checksum validity and safe drivability conclusions require original firmware reference, suitable ECU-specific calibration metadata, instrumentation, and expert bench validation.
 - Uploaded proprietary firmware samples are not committed to this public repository. Automated tests are synthetic only. Real-device verification of Android file picking, Puter web search and UI behavior is still required.
+
+
+## TriMind 4.0 ECU Pro — provenance-aware professional groundwork
+
+Read-only features added:
+- **Evidence-based family identification** of common Bosch EDC15/16/17, MD1/MG1/MED/ME, Siemens/Continental SID and Delphi DCM signatures. Results explain the *actual matching marker* and its uncertainty; it does not magically deduce precise ECU part numbers or CPU. Hex viewer, general CRC32, SHA-256 and address-aligned diff; **CRC32 is not OEM-specific checksum correction**.
+- **On-device IndexedDB binary reference library**, up to 8 original uploads of <=32 MiB each, with SHA-256, name, claimed provenance, HW/SW and notes. Data is not uploaded to GitHub or a cloud. All records are explicitly **USER_SUPPLIED_UNVERIFIED**. User can re-open and compare references. IndexedDB relies on WebView persistent app storage, not a shared verified-OEM service. Do not uninstall before backing up needed originals.
+- **Calibration metadata readers:** partial TunerPro XDF support for contiguous constant/map byte arrays with only 8/16/32-bit unsigned, big-endian assumptions and limited linear MATH expressions. It refuses complex BASEOFFSET, nonzero strides, unknown equations and out-of-range locations. Small value/line graph available. For A2L (ASAM MCD-2 MC) only a CHARACTERISTIC/address index is generated; real COMPU_METHOD/RECORD_LAYOUT, byte order, memory segmentation and proper map-axis interpretation remain future work. These limits are shown next to the values.
+- **Diagnostic import** of simple DTC/CSV/LOG files, with DTC code extraction and basic numeric statistics (up to 2,000 lines). Not live OBD/UDS connection; not a scanner replacement.
+- **Live search results** from GitHub repositories/issues and Mechanics Stack Exchange public APIs, linked to original URLs, with an optional Puter OpenAI web-search call for other accessible documentation and forums. No all-forum/private-index access is claimed; CORS, rate limits, website availability, account credentials and model support matter.
+- **Portable incident/evidence exports** through Android's system document provider: human-readable TXT technical report and compact structured JSON (without binary firmware). The export contains hashes, candidate IDs, calibration limits, diagnostic summary, and links. Local processing of bytes is the default. Model analysis receives a text report only after explicit user interaction.
+- **ECU-focused AI role prompts** select reverse engineering, research and skeptical validation roles for ChatGPT/Gemini/Claude. Consensus can still be wrong; these roles do not prove model independence or support correctness.
+
+Not delivered yet: a licensed verified OEM firmware corpus, universal proprietary checksum algorithms, complete XDF/A2L conversion support, running disassemblers such as Ghidra on Android, physical OBD/UDS hardware integration, or permanently running server-based crawlers of every forum. These require datasets, vendor rights, hardware, maintained infrastructure and substantially more work. The APK build alone is not evidence of successful live Puter/GitHub integration on every device. Proprietary user firmware should not be committed to a public repo.
+
+Reference standards: ASAM MCD-2 MC at https://www.asam.net/standards/detail/mcd-2-mc/ and TunerPro XDF format discussions at https://forum.tunerpro.net/. No proprietary datasets or tuning maps are redistributed.

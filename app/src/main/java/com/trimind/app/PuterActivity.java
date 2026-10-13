@@ -38,6 +38,9 @@ public class PuterActivity extends Activity {
     private WebView popupView;
     private ValueCallback<Uri[]> uploadCallback;
     private static final int FILE_PICKER_REQUEST = 3092;
+    private static final int REPORT_EXPORT_REQUEST = 3093;
+    private byte[] pendingExportData;
+
     private static final String ORIGIN = "https://trimind.local/";
     private static final String[] SAFE_LINK_SCHEMES = {"https", "http"};
 
@@ -89,7 +92,9 @@ public class PuterActivity extends Activity {
             @Override public WebResourceResponse shouldInterceptRequest(WebView webView, WebResourceRequest request) {
                 Uri uri=request.getUrl();
                 if ("https".equals(uri.getScheme()) && "trimind.local".equals(uri.getHost())
-                        && ("/v3.js".equals(uri.getPath()) || "/ecu.js".equals(uri.getPath()))) {
+                        && ("/v3.js".equals(uri.getPath()) || "/ecu.js".equals(uri.getPath())
+                            || "/ecu_core.js".equals(uri.getPath())
+                            || "/ecu_pro.js".equals(uri.getPath())))) {
                     try {
                         return new WebResourceResponse("application/javascript", "UTF-8",
                                 getAssets().open(uri.getPath().substring(1)));
@@ -182,6 +187,21 @@ public class PuterActivity extends Activity {
 
     @Override protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REPORT_EXPORT_REQUEST) {
+            byte[] bytes=pendingExportData;
+            pendingExportData=null;
+            if (resultCode == RESULT_OK && data != null && data.getData() != null && bytes != null) {
+                try (java.io.OutputStream output=getContentResolver().openOutputStream(data.getData(),"w")) {
+                    if (output == null) throw new java.io.IOException("Відсутній доступ до файла");
+                    output.write(bytes);
+                    output.flush();
+                    Toast.makeText(this,"Звіт ECU збережено",Toast.LENGTH_LONG).show();
+                } catch (Exception e) {
+                    Toast.makeText(this,"Не вдалося записати звіт: "+e.getMessage(),Toast.LENGTH_LONG).show();
+                }
+            }
+            return;
+        }
         if (requestCode != FILE_PICKER_REQUEST) return;
         ValueCallback<Uri[]> callback = uploadCallback;
         uploadCallback = null;
@@ -266,6 +286,35 @@ public class PuterActivity extends Activity {
         @JavascriptInterface public void cancelMonitorReminder() {
             runOnUiThread(() -> MonitorReceiver.cancel(PuterActivity.this));
         }
+        @JavascriptInterface public void saveReport(String filename, String mime, String encoded) {
+            runOnUiThread(() -> {
+                try {
+                    if (pendingExportData != null) {
+                        Toast.makeText(PuterActivity.this,"Завершіть попередній експорт",Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    if (!"text/plain".equals(mime)&&!"application/json".equals(mime)&&
+                        !"text/html".equals(mime)) throw new IllegalArgumentException("Недозволений тип файла");
+                    if (encoded == null || encoded.length() > 2100000)
+                        throw new IllegalArgumentException("Звіт завеликий");
+                    byte[] bytes=android.util.Base64.decode(encoded,android.util.Base64.DEFAULT);
+                    if(bytes.length>1500000)throw new IllegalArgumentException("Звіт завеликий");
+                    String safeName=(filename==null?"TriMind-ECU.txt":filename)
+                        .replaceAll("[^A-Za-z0-9._-]","_");
+                    if(safeName.length()>90)safeName=safeName.substring(0,90);
+                    pendingExportData=bytes;
+                    Intent intent=new Intent(Intent.ACTION_CREATE_DOCUMENT);
+                    intent.addCategory(Intent.CATEGORY_OPENABLE);
+                    intent.setType(mime);
+                    intent.putExtra(Intent.EXTRA_TITLE,safeName);
+                    intent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+                    startActivityForResult(intent,REPORT_EXPORT_REQUEST);
+                } catch (Exception e) {
+                    pendingExportData=null;
+                    Toast.makeText(PuterActivity.this,"Експорт: "+e.getMessage(),Toast.LENGTH_LONG).show();
+                }
+            });
+        }
         @JavascriptInterface public void openBrowser() {
             runOnUiThread(() -> external(Uri.parse("https://puter.com/")));
         }
@@ -278,6 +327,7 @@ public class PuterActivity extends Activity {
     }
 
     @Override protected void onDestroy() {
+        pendingExportData=null;
         if (uploadCallback != null) {
             uploadCallback.onReceiveValue(null);
             uploadCallback = null;

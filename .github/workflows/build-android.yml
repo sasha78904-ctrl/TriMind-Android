@@ -43,6 +43,11 @@ jobs:
         run: |
           node --check app/src/main/assets/ecu.js
           node tests/ecu_logic.test.js
+      - name: Validate ECU Pro 4.0 database and calibration analysis
+        run: |
+          node --check app/src/main/assets/ecu_core.js
+          node --check app/src/main/assets/ecu_pro.js
+          node tests/ecu_pro_logic.test.js
       - name: Install Android SDK packages
         run: |
           SDKMANAGER="$(find "$ANDROID_HOME/cmdline-tools" -type f -name sdkmanager | head -n 1)"

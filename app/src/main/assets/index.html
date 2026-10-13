@@ -88,6 +88,8 @@ details summary{font-weight:700;cursor:pointer;padding:7px 0}
 </style>
 <script src="https://trimind.local/v3.js"></script>
 <script src="https://trimind.local/ecu.js"></script>
+<script src="https://trimind.local/ecu_core.js"></script>
+<script src="https://trimind.local/ecu_pro.js"></script>
 <script src="https://js.puter.com/v2/" onerror="window.sdkFailed=true"></script>
 </head>
 <body>
@@ -139,6 +141,69 @@ details summary{font-weight:700;cursor:pointer;padding:7px 0}
    <button class="secondary" id="ecuCopy">Копіювати звіт</button>
   </div>
   <div class="notice warning">У цьому модулі немає прошивання ЕБУ, редагування карт або достовірної перевірки фірмових checksum. Пошукові результати й форуми потребують перевірки; деякі теми доступні лише авторизованим учасникам. Повний двійковий дамп не передається ШІ автоматично.</div>
+ </section>
+ <section class="card" id="ecuProCard">
+  <div class="cardhead"><h2>ECU Pro · експертна лабораторія</h2><span class="badge">4.0</span></div>
+  <p class="muted small">Усі байтові перевірки виконуються локально. Прошивки автоматично не передаються ні Puter, ні іншим ШІ. Висновки з форумів не вважаються заводською документацією.</p>
+  <div class="actions">
+   <button class="secondary" id="proScan">↻ Ідентифікувати поточний дамп</button>
+  </div>
+  <label for="proHexOffset">HEX-перегляд: офсет у десятковому форматі</label>
+  <input id="proHexOffset" class="v3field" inputmode="numeric" type="number" min="0" value="0">
+  <input id="proOffset" type="hidden" value="0">
+  <details><summary>Сімейство ЕБУ, маркери, CRC32 та HEX</summary><pre id="proIdentity" class="ecuDump"></pre></details>
+  <details><summary>Адресно вирівняне порівняння</summary><pre id="proAligned" class="ecuDump"></pre></details>
+  <divider/>
+  <h3>Приватна база прошивок на телефоні</h3>
+  <p class="muted small">Максимум 8 локальних дампів до 32 МБ. Це користувацькі еталони, а не підтверджена заводська база. Вкажи походження файлу, щоб надалі відстежувати достовірність.</p>
+  <div class="gridForm">
+   <label for="proEcu">Автомобіль та ЕБУ</label><input id="proEcu" class="v3field" placeholder="Mercedes W203 2.2 CDI / EDC16">
+   <label for="proHw">HW-номер</label><input id="proHw" class="v3field" placeholder="HW, якщо відомий">
+   <label for="proSw">SW-номер</label><input id="proSw" class="v3field" placeholder="SW, якщо відомий">
+   <label for="proOrigin">Походження дампу</label><input id="proOrigin" class="v3field" placeholder="Напр.: прочитано з власного ЕБУ, дата, обладнання">
+  </div>
+  <div class="actions"><button class="secondary" id="proSaveReference">Зберегти поточний BIN у базу</button></div>
+  <label for="proStoredFiles">Збережені дампи</label><select id="proStoredFiles" style="width:100%"></select>
+  <div class="actions">
+   <button class="secondary" id="proLoadReference">Взяти як еталон</button>
+   <button class="ghost" id="proDeleteReference">Видалити запис</button>
+  </div>
+  <p id="proDbCount" class="muted small"></p><pre id="proReference" class="ecuDump"></pre>
+  <divider/>
+  <h3>Дані калібрувань: XDF та A2L</h3>
+  <p class="muted small">XDF: обмежена підтримка простих послідовних карт і лінійних формул. A2L: індексація об'єктів і адрес, без декодування калібрувань. Сумісність із твоєю прошивкою потрібно перевірити вручну.</p>
+  <input id="proDescriptor" class="v3field" type="file" accept=".xdf,.a2l">
+  <div id="proCalibration" class="small"></div>
+  <label for="proMapSelect">Калібрувальний об’єкт</label>
+  <select id="proMapSelect" style="width:100%"></select>
+  <pre id="proMapDetail" class="ecuDump"></pre>
+  <canvas id="proGraph" width="480" height="190" style="width:100%;max-height:200px"></canvas>
+  <p id="proMapNotes" class="muted small"></p>
+  <divider/>
+  <h3>Діагностика DTC / CSV-логів</h3>
+  <input id="proDiagnostic" class="v3field" type="file" accept=".csv,.txt,.log">
+  <pre id="proDiagnosticResult" class="ecuDump">Можна додати звіт зі сканера або CSV-параметри двигуна.</pre>
+  <divider/>
+  <h3>Пошук документації, GitHub та форумів</h3>
+  <p class="muted small">Прямі результати GitHub та Stack Exchange — за реальними URL. Окремий вебпошук Puter може знаходити форумні дискусії; закриті розділи не обходяться.</p>
+  <input id="proSearchTerm" class="v3field" placeholder="Введи HW/SW, Bosch номер або сімейство ЕБУ">
+  <div class="actions">
+   <button id="proSearchButton" class="secondary">Шукати публічні технічні записи</button>
+   <button id="proAIResearch" class="secondary">AI вебпошук у форумах</button>
+  </div>
+  <div id="proSources"></div>
+  <details><summary>Вебпошук Puter (висновки потребують перевірки)</summary>
+   <pre id="proAIResearchText" class="ecuDump">Пошук ще не запускався.</pre>
+  </details>
+  <divider/>
+  <h3>Технічний звіт та рада трьох ШІ</h3>
+  <div class="actions">
+   <button class="primary" id="proToCouncil">Передати звіт трьом ШІ</button>
+   <button class="secondary" id="proExport">Зберегти TXT-звіт</button>
+   <button class="secondary" id="proExportJson">Експорт доказів JSON</button>
+  </div>
+  <p id="proStatus" class="muted small">Локальна лабораторія готова. Завантаж дамп вище.</p>
+  <p class="notice warning">Відсутні: програмування ЕБУ, власницькі OEM checksum, повноцінний дизасемблер і універсальне декодування A2L. Жоден результат не підтверджує безпеку запису прошивки в автомобіль.</p>
  </section>
  <section class="card" id="account">
   <div class="cardhead"><h2>Підключення</h2><span class="badge" id="accountBadge">Перевірка…</span></div>
@@ -516,7 +581,9 @@ async function queryWithFallback(provider,prompt,modelChoices,render,context=nul
  throw lastError||new Error('Моделі недоступні');
 }
 function independentPrompt(question,provider){
- return (window.TriMindV3?window.TriMindV3.rolePrefix(provider):'')+
+ return (window.TriMindECUPro&&/ECU|прошивк|контролер/i.test(question)?
+ window.TriMindECUPro.rolePrefix(provider):
+ (window.TriMindV3?window.TriMindV3.rolePrefix(provider):''))+
  'Відповідай українською. Ти незалежний експерт. Розв’яжи завдання практично, структуровано й точно. '+
  'Не вигадуй актуальні джерела, перевірки, правові норми, ціни чи події. Якщо щось потребує перевірки, прямо скажи про це.\n\nЗАВДАННЯ:\n'+question;
 }
@@ -893,6 +960,7 @@ $('openBrowser').addEventListener('click',()=>{
 updateModeButton();
 if(window.TriMindV3)window.TriMindV3.init();
 if(window.TriMindECU)window.TriMindECU.init();
+if(window.TriMindECUPro)window.TriMindECUPro.init();
 window.TriMindRefreshHistory=showHistory;
 showHistory();
 if(window.puter&&puter.auth)checkAuth();
