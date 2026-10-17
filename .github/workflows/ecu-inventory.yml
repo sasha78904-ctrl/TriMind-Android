@@ -29,8 +29,16 @@ jobs:
           print("ZIP EOCD in last 65557 bytes:",tail.rfind(b'PK\\x05\\x06'))
           print("ZIP64 locator:",tail.rfind(b'PK\\x06\\x07'))
           PY
-      - run: python tools/index_ecu_zip.py work/backup.zip output
-      - uses: actions/upload-artifact@v4
+      - name: Standard ZIP indexing
+        id: normal
+        continue-on-error: true
+        run: python tools/index_ecu_zip.py work/backup.zip output
+      - name: Forensic local-header inventory
+        if: steps.normal.outcome == 'failure'
+        run: python tools/recover_zip_index.py work/backup.zip output
+      - name: Upload reports even when standard indexing fails
+        if: always()
+        uses: actions/upload-artifact@v4
         with:
           name: ecu-inventory
           path: output/
