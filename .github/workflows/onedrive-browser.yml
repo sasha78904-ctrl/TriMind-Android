@@ -1,0 +1,32 @@
+name: Inspect OneDrive in browser
+on:
+  workflow_dispatch:
+    inputs:
+      share_url:
+        description: OneDrive public folder link
+        required: true
+        type: string
+permissions:
+  contents: read
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install playwright==1.56.0
+      - run: python -m playwright install chromium
+      - name: Read shared folder in browser
+        env:
+          SHARE_URL: ${{ inputs.share_url }}
+        run: python tools/onedrive_browser_readonly.py
+      - name: Save report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: onedrive-browser-report
+          path: output/
+          retention-days: 3
