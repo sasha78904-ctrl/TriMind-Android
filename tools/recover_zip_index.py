@@ -8,7 +8,7 @@ from collections import Counter
 def scan(path, output):
     path, output = pathlib.Path(path), pathlib.Path(output)
     output.mkdir(parents=True, exist_ok=True)
-    signature=b"PK\\x03\\x04"
+    signature=b"PK\x03\x04"
     rows=[]
     # mmap avoids loading 1.5 GB into Python heap.
     import mmap
