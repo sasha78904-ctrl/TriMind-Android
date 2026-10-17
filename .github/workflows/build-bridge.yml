@@ -1,0 +1,44 @@
+name: Build TriMind Bridge APK
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'bridge/**'
+      - 'settings.gradle'
+      - '.github/workflows/build-bridge.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  bridge:
+    runs-on: ubuntu-latest
+    env:
+      ANDROID_HOME: /usr/local/lib/android/sdk
+      ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Install Android SDK
+        run: |
+          SDKMANAGER="$(find "$ANDROID_HOME/cmdline-tools" -type f -name sdkmanager | head -n 1)"
+          test -x "$SDKMANAGER"
+          yes | "$SDKMANAGER" --licenses >/dev/null || true
+          "$SDKMANAGER" "platforms;android-35" "build-tools;35.0.0"
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.10.2'
+      - name: Compile Bridge
+        run: gradle --no-daemon :bridge:assembleDebug
+      - name: Verify APK
+        run: |
+          test -s bridge/build/outputs/apk/debug/bridge-debug.apk
+          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging bridge/build/outputs/apk/debug/bridge-debug.apk | head -n 6
+          sha256sum bridge/build/outputs/apk/debug/bridge-debug.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: TriMind-Bridge-v0.1-APK
+          path: bridge/build/outputs/apk/debug/bridge-debug.apk
+          if-no-files-found: error
