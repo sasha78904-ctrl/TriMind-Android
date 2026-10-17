@@ -11,13 +11,17 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 import java.io.OutputStream;
+import android.provider.DocumentsContract;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 import java.util.HashSet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.zip.ZipOutputStream;
 
 public final class BridgeActivity extends Activity {
- private static final int SOURCE=1,DEST=2,ZIP=3;
+ private static final int SOURCE=1,DEST=2;
  private final ExecutorService executor=Executors.newSingleThreadExecutor();
  private Uri source,destination,archive;
  private TextView info;
@@ -33,13 +37,13 @@ public final class BridgeActivity extends Activity {
    TextView title=new TextView(this);
    title.setText("TriMind Bridge 0.1");title.setTextSize(25);root.addView(title);
    TextView desc=new TextView(this);
-   desc.setText("Обери папку ECU, перевір кількість файлів, скопіюй у другу папку або створи ZIP для Google Drive.");
+   desc.setText("Обери папку ECU, переглянь файли, скопіюй у окрему папку або створи ZIP там. Якщо Drive не підтримує вибір папки, передай ZIP через меню Поділитися.");
    root.addView(desc);
    pick=button(root,"1. Обрати папку ECU",()->tree(SOURCE));
    scan=button(root,"2. Порахувати файли",this::scanFiles);
    choose=button(root,"3. Обрати папку призначення",()->tree(DEST));
    copy=button(root,"4. Копіювати без перезапису",this::copyFiles);
-   make=button(root,"5. Створити ZIP",this::createZip);
+   make=button(root,"5. Створити ZIP у папці призначення",this::createZip);
    share=button(root,"6. Надіслати ZIP у Google Drive",this::shareZip);
    info=new TextView(this);info.setTextSize(15);info.setTextIsSelectable(true);
    info.setPadding(8,18,8,8);root.addView(info);
@@ -55,7 +59,7 @@ public final class BridgeActivity extends Activity {
    pick.setEnabled(!busy);choose.setEnabled(!busy);
    scan.setEnabled(!busy&&source!=null);
    copy.setEnabled(!busy&&source!=null&&destination!=null);
-   make.setEnabled(!busy&&source!=null);
+   make.setEnabled(!busy&&source!=null&&destination!=null&&!FileOps.nested(source,destination));
    share.setEnabled(!busy&&archive!=null);
  }
  private void show(String message){runOnUiThread(()->info.setText(message));}
@@ -76,12 +80,33 @@ public final class BridgeActivity extends Activity {
    startActivityForResult(intent,request);
  }
  private void createZip(){
-   Intent intent=new Intent(Intent.ACTION_CREATE_DOCUMENT);
-   intent.addCategory(Intent.CATEGORY_OPENABLE);
-   intent.setType("application/zip");
-   intent.putExtra(Intent.EXTRA_TITLE,"TriMind_ECU_Backup.zip");
-   intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION|Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-   startActivityForResult(intent,ZIP);
+   if(source==null||destination==null||FileOps.nested(source,destination)){
+     show("Спочатку обери окрему папку призначення поза папкою джерела.");return;
+   }
+   run("Створення ZIP",()->{
+     Uri from=source, to=destination;
+     Uri target=FileOps.root(to);
+     String base="TriMind_ECU_Backup_"+new SimpleDateFormat("yyyyMMdd_HHmmss",Locale.US).format(new Date());
+     String name=FileOps.uniqueName(getContentResolver(),target,base,".zip");
+     Uri created=DocumentsContract.createDocument(getContentResolver(),target,"application/zip",name);
+     if(created==null)throw new IllegalStateException("Не вдалося створити ZIP у папці призначення");
+     // Refuse self-archiving even if a provider aliases the selected folders.
+     if(FileOps.sameDocument(created,FileOps.root(from)))
+       throw new IllegalStateException("Папка призначення збігається з джерелом");
+     FileOps.Stats stats=new FileOps.Stats();
+     try(OutputStream out=getContentResolver().openOutputStream(created,"w")){
+       if(out==null)throw new IllegalStateException("Не вдалося відкрити новий ZIP");
+       try(ZipOutputStream zip=new ZipOutputStream(out)){
+         FileOps.zip(getContentResolver(),FileOps.root(from),"",zip,stats,
+                     new HashSet<>(),this::show,0,created);
+       }
+     }catch(Exception e){
+       archive=null;
+       throw new IllegalStateException("ZIP не завершено; у папці призначення може залишитися неповний файл "+name+". "+e.getMessage(),e);
+     }
+     archive=created;
+     show("ZIP успішно закрито: "+name+". "+stats+"\\nОригінали не змінені. Для Google Drive натисни Поділитися та вибери ОКРЕМУ папку.");
+   });
  }
  @Override protected void onActivityResult(int request,int result,Intent data){
    super.onActivityResult(request,result,data);
@@ -94,20 +119,6 @@ public final class BridgeActivity extends Activity {
      if(request==SOURCE){source=uri;archive=null;show("Обрано джерело: "+uri);}
      else{destination=uri;show("Обрано призначення: "+uri);}
      buttons();
-   }else if(request==ZIP){
-     archive=null;
-     run("Створення ZIP",()->{
-       FileOps.Stats stats=new FileOps.Stats();
-       try(OutputStream out=getContentResolver().openOutputStream(uri,"w")){
-         if(out==null)throw new IllegalStateException("Не вдалося відкрити архів");
-         try(ZipOutputStream zip=new ZipOutputStream(out)){
-           FileOps.zip(getContentResolver(),FileOps.root(source),"",zip,stats,
-                       new HashSet<>(),this::show,0);
-         }
-       }
-       archive=uri;
-       show("ZIP створено. "+stats+"\nНатисни кнопку передачі у Google Drive.");
-     });
    }
  }
  private void scanFiles(){
