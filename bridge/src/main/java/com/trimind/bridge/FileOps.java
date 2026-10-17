@@ -90,8 +90,21 @@ final class FileOps {
  }
  static void copy(ContentResolver resolver,Uri from,Uri to,Stats stats,Progress progress,int depth)throws Exception {
    if(sameDocument(from,to))throw new IllegalStateException("Джерело та призначення збігаються");
+   assertDestinationOutsideSource(resolver,from,to,new HashSet<String>(),depth);
    copyInternal(resolver,from,to,stats,progress,depth,new HashSet<String>(),
      to.getAuthority()+":"+DocumentsContract.getDocumentId(to));
+ }
+ /** Preflight the full folder tree before creating anything, including providers with opaque IDs. */
+ private static void assertDestinationOutsideSource(ContentResolver resolver,Uri folder,Uri destination,
+                                                     Set<String> visited,int depth) {
+   if(!folder.getAuthority().equals(destination.getAuthority()))return;
+   if(depth>64)throw new IllegalStateException("Забагато рівнів папок");
+   if(sameDocument(folder,destination))
+     throw new IllegalStateException("Призначення розташоване всередині джерела");
+   String key=folder.getAuthority()+":"+DocumentsContract.getDocumentId(folder);
+   if(!visited.add(key))return;
+   for(Item item:children(resolver,folder))
+     if(item.folder())assertDestinationOutsideSource(resolver,item.uri,destination,visited,depth+1);
  }
  private static void copyInternal(ContentResolver resolver,Uri from,Uri to,Stats stats,
                                   Progress progress,int depth,Set<String> visited,
