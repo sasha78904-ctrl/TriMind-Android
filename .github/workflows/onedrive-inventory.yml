@@ -1,0 +1,29 @@
+name: OneDrive public ECU inventory
+on:
+  workflow_dispatch:
+    inputs:
+      shared_folder_url:
+        description: 'Public OneDrive shared-folder link'
+        required: true
+        type: string
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Probe anonymous metadata access
+        env:
+          ONEDRIVE_SHARE_URL: ${{ inputs.shared_folder_url }}
+        run: python tools/onedrive_public_inventory.py
+      - name: Save metadata report
+        uses: actions/upload-artifact@v4
+        with:
+          name: onedrive-ecu-inventory
+          path: output/
+          retention-days: 7
