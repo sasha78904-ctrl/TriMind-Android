@@ -20,6 +20,7 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.LinearLayout;
+import android.widget.Button;
 import android.widget.Toast;
 
 
@@ -49,7 +50,15 @@ public class PuterActivity extends Activity {
         view = new WebView(this);
         view.setBackgroundColor(Color.rgb(247, 249, 252));
         configure(view);
-        setContentView(view, new ViewGroup.LayoutParams(-1, -1));
+        LinearLayout layout = new LinearLayout(this);
+        layout.setOrientation(LinearLayout.VERTICAL);
+        Button importButton = new Button(this);
+        importButton.setText("📁 Імпорт бази DAMOS / ECU");
+        importButton.setAllCaps(false);
+        importButton.setOnClickListener(v -> startActivity(new Intent(this, BridgeActivity.class)));
+        layout.addView(importButton, new LinearLayout.LayoutParams(-1, -2));
+        layout.addView(view, new LinearLayout.LayoutParams(-1, 0, 1));
+        setContentView(layout, new ViewGroup.LayoutParams(-1, -1));
         try {
             byte[] bytes = readAsset("simple.html");
             view.loadDataWithBaseURL(ORIGIN,
