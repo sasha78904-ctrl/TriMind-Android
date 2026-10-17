@@ -80,11 +80,13 @@ final class FileOps {
    }
  }
  static void zip(ContentResolver r,Uri from,String prefix,ZipOutputStream zip,Stats s,
-                 Set<String> used,Progress p,int depth)throws Exception{
+                 Set<String> used,Uri omit,Progress p,int depth)throws Exception{
    if(depth>64)throw new IllegalStateException("Забагато рівнів");
    for(Item i:children(r,from)){
+     if(omit!=null && i.uri.getAuthority().equals(omit.getAuthority())
+       && DocumentsContract.getDocumentId(i.uri).equals(DocumentsContract.getDocumentId(omit)))continue;
      String name=prefix+i.name.replace('/','_').replace('\\','_');
-     if(i.folder()){s.folders++;zip(r,i.uri,name+"/",zip,s,used,p,depth+1);}
+     if(i.folder()){s.folders++;zip(r,i.uri,name+"/",zip,s,used,omit,p,depth+1);}
      else{
        if(!used.add(name)){s.skipped++;continue;}
        zip.putNextEntry(new ZipEntry(name));

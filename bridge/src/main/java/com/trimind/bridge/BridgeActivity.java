@@ -31,7 +31,7 @@ public final class BridgeActivity extends Activity {
    root.setPadding(20,25,20,25);
    sc.addView(root);
    TextView title=new TextView(this);
-   title.setText("TriMind Bridge 0.1");title.setTextSize(25);root.addView(title);
+   title.setText("TriMind Bridge 0.1.1");title.setTextSize(25);root.addView(title);
    TextView desc=new TextView(this);
    desc.setText("Обери папку ECU, перевір кількість файлів, скопіюй у другу папку або створи ZIP для Google Drive.");
    root.addView(desc);
@@ -102,7 +102,7 @@ public final class BridgeActivity extends Activity {
          if(out==null)throw new IllegalStateException("Не вдалося відкрити архів");
          try(ZipOutputStream zip=new ZipOutputStream(out)){
            FileOps.zip(getContentResolver(),FileOps.root(source),"",zip,stats,
-                       new HashSet<>(),this::show,0);
+                       new HashSet<>(),uri,this::show,0);
          }
        }
        archive=uri;
