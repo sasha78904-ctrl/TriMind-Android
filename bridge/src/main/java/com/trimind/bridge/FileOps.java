@@ -88,6 +88,11 @@ final class FileOps {
    }
    throw new IllegalStateException("Не вдалося підібрати нове ім'я архіву");
  }
+ static void preflight(ContentResolver resolver,Uri from,Uri to) {
+   if(nested(from,to)||sameDocument(from,to))
+     throw new IllegalStateException("Destination is inside source");
+   assertDestinationOutsideSource(resolver,from,to,new HashSet<String>(),0);
+ }
  static void copy(ContentResolver resolver,Uri from,Uri to,Stats stats,Progress progress,int depth)throws Exception {
    if(sameDocument(from,to))throw new IllegalStateException("Джерело та призначення збігаються");
    assertDestinationOutsideSource(resolver,from,to,new HashSet<String>(),depth);
