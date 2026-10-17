@@ -21,6 +21,11 @@ jobs:
         env:
           ONEDRIVE_SHARE_URL: ${{ inputs.shared_folder_url }}
         run: python tools/onedrive_public_inventory.py
+      - name: Test alternate read-only access methods
+        if: always()
+        env:
+          ONEDRIVE_SHARE_URL: ${{ inputs.shared_folder_url }}
+        run: python tools/onedrive_access_diagnostics.py
       - name: Save metadata report
         uses: actions/upload-artifact@v4
         with:
