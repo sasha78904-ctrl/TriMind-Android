@@ -8,6 +8,7 @@
         android:label="@string/app_name"
         android:icon="@drawable/ic_trimind"
         android:theme="@android:style/Theme.Material.Light.NoActionBar">
+        <activity android:name=".BridgeActivity" android:exported="false"/>
         <activity android:name=".MainActivity"
                   android:exported="false"
                   android:windowSoftInputMode="adjustResize"/>
