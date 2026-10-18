@@ -85,6 +85,7 @@ public final class BridgeActivity extends Activity {
    }
    run("Створення ZIP",()->{
      Uri from=source, to=destination;
+     FileOps.preflight(getContentResolver(),FileOps.root(from),FileOps.root(to));
      Uri target=FileOps.root(to);
      String base="TriMind_ECU_Backup_"+new SimpleDateFormat("yyyyMMdd_HHmmss",Locale.US).format(new Date());
      String name=FileOps.uniqueName(getContentResolver(),target,base,".zip");
