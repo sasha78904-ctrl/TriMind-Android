@@ -71,6 +71,33 @@ final class FileOps {
      if(stats.files>0&&stats.files%100==0)progress.update("Знайдено "+stats.files+" файлів");
    }
  }
+ /** Read-only recursive scan with a bounded relative-path preview. */
+ static void scanWithPreview(ContentResolver resolver,Uri folder,Stats stats,Progress progress,
+                             List<String> preview,int limit)throws Exception {
+   scanPreviewInternal(resolver,folder,stats,progress,preview,limit,"",new HashSet<String>(),0);
+ }
+ private static void scanPreviewInternal(ContentResolver resolver,Uri folder,Stats stats,Progress progress,
+                                         List<String> preview,int limit,String prefix,
+                                         Set<String> active,int depth)throws Exception {
+   if(depth>64)throw new IllegalStateException("Забагато рівнів папок");
+   String key=folder.getAuthority()+":"+DocumentsContract.getDocumentId(folder);
+   if(!active.add(key))throw new IllegalStateException("Циклічне посилання на папку");
+   try {
+     for(Item item:children(resolver,folder)){
+       String relative=prefix+item.name;
+       if(item.folder()){
+         stats.folders++;
+         if(preview.size()<limit)preview.add(relative+"/");
+         scanPreviewInternal(resolver,item.uri,stats,progress,preview,limit,
+                             relative+"/",active,depth+1);
+       }else{
+         stats.files++;stats.bytes+=Math.max(0,item.size);
+         if(preview.size()<limit)preview.add(relative);
+         if(stats.files%100==0)progress.update("Знайдено "+stats.files+" файлів");
+       }
+     }
+   }finally{active.remove(key);}
+ }
  static long stream(InputStream input,OutputStream output)throws Exception {
    byte[] buf=new byte[65536];long total=0;
    for(int n;(n=input.read(buf))!=-1;){
