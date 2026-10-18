@@ -47,7 +47,14 @@ final class ZipVerifier {
       if(in==null)throw new IllegalStateException("ZIP cannot be reopened");
       for(int n;(n=in.read(buffer))!=-1;) {
         if(n==0)continue;
-        for(int i=0;i<n;i++)ring[(int)(total++%capacity)]=buffer[i];
+        int offset=0;
+        while(offset<n) {
+          int pos=(int)(total%capacity);
+          int take=Math.min(n-offset,capacity-pos);
+          System.arraycopy(buffer,offset,ring,pos,take);
+          total+=take;
+          offset+=take;
+        }
       }
     }
     int length=(int)Math.min(total,capacity);
