@@ -173,6 +173,14 @@ final class FileOps {
          throw new IllegalStateException("Копіювання "+item.name+
            " перервано; новий файл може бути неповним. Оригінал не змінено.",e);
        }
+       // Verify both source and new destination bytes after the output stream closes.
+       // A mismatch aborts the operation; never delete or overwrite either document.
+       try {
+         CopyVerifier.verify(resolver,item.uri,created);
+       } catch(Exception e) {
+         throw new IllegalStateException("SHA-256 перевірка не пройдена для "+item.name+
+           "; новий файл може бути неповним, оригінал не змінено.",e);
+       }
        stats.files++;
        if(stats.files%25==0)progress.update("Скопійовано "+stats.files);
      }
