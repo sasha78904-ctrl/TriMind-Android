@@ -156,6 +156,9 @@ final class FileOps {
        Uri target=old!=null?old.uri:DocumentsContract.createDocument(resolver,to,
          DocumentsContract.Document.MIME_TYPE_DIR,item.name);
        if(target==null)throw new IllegalStateException("Не створено папку "+item.name);
+       if(sameDocument(target,item.uri)||sameDocument(target,from))
+         throw new IllegalStateException("Небезпечний збіг папок: "+item.name);
+       present.put(item.name,new Item(target,item.name,DocumentsContract.Document.MIME_TYPE_DIR,-1));
        stats.folders++;
        copyInternal(resolver,item.uri,target,stats,progress,depth+1,visited,destinationKey);
      }else{
@@ -163,16 +166,31 @@ final class FileOps {
        Uri created=DocumentsContract.createDocument(resolver,to,item.mime,item.name);
        if(created==null)throw new IllegalStateException("Не створено файл "+item.name);
        // If the provider races and returns an existing document, never write into it.
-       if(sameDocument(created,item.uri)||sameDocument(created,from))
+       if(sameDocument(created,item.uri)||sameDocument(created,from)||sameDocument(created,to))
          throw new IllegalStateException("Небезпечний збіг документів: "+item.name);
+       // A provider must not return an already present document for a create request.
+       // Check BEFORE opening output in write mode to prevent overwriting existing data.
+       for(Item existing:present.values())
+         if(sameDocument(created,existing.uri))
+           throw new IllegalStateException("Постачальник повернув наявний файл: "+item.name);
+       long written;
        try(InputStream in=resolver.openInputStream(item.uri);
            OutputStream out=resolver.openOutputStream(created,"w")){
          if(in==null||out==null)throw new IllegalStateException("Не відкривається "+item.name);
-         stats.bytes+=stream(in,out);
+         written=stream(in,out);
        }catch(Exception e){
          throw new IllegalStateException("Копіювання "+item.name+
            " перервано; новий файл може бути неповним. Оригінал не змінено.",e);
        }
+       // Do not count a copied file as successful until both streams are closed and
+       // the destination is read back and checked against the original SHA-256.
+       try{CopyVerifier.verify(resolver,item.uri,created);}
+       catch(Exception e){
+         throw new IllegalStateException("Перевірка SHA-256 не пройдена: "+item.name+
+           ". Новий файл може бути неповним; оригінал не змінено.",e);
+       }
+       present.put(item.name,new Item(created,item.name,item.mime,written));
+       stats.bytes+=written;
        stats.files++;
        if(stats.files%25==0)progress.update("Скопійовано "+stats.files);
      }
