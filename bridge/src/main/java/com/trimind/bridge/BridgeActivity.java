@@ -127,8 +127,14 @@ public final class BridgeActivity extends Activity {
  private void scanFiles(){
    run("Сканування",()->{
      FileOps.Stats s=new FileOps.Stats();
-     FileOps.scan(getContentResolver(),FileOps.root(source),s,this::show,0);
-     show("Сканування завершено. "+s);
+     java.util.List<String> preview=new java.util.ArrayList<>();
+     // Read-only SAF traversal; display at most 50 relative paths to bound UI memory.
+     FileOps.scanWithPreview(getContentResolver(),FileOps.root(source),s,this::show,preview,50);
+     StringBuilder report=new StringBuilder("Сканування завершено. ").append(s);
+     report.append("\nПерші ").append(preview.size()).append(" записів:");
+     for(String path:preview)report.append("\n").append(path);
+     if(s.files+s.folders>preview.size())report.append("\n… Решта записів не показані.");
+     show(report.toString());
    });
  }
  private void copyFiles(){
