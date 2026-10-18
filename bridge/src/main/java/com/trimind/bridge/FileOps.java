@@ -163,6 +163,8 @@ final class FileOps {
        Uri created=DocumentsContract.createDocument(resolver,to,item.mime,item.name);
        if(created==null)throw new IllegalStateException("Не створено файл "+item.name);
        // If the provider races and returns an existing document, never write into it.
+       for(Item prior:present.values())if(sameDocument(created,prior.uri))
+         throw new IllegalStateException("Existing destination URI");
        if(sameDocument(created,item.uri)||sameDocument(created,from))
          throw new IllegalStateException("Небезпечний збіг документів: "+item.name);
        try(InputStream in=resolver.openInputStream(item.uri);
