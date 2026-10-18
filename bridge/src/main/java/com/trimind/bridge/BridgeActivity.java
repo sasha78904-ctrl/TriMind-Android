@@ -85,6 +85,9 @@ public final class BridgeActivity extends Activity {
    }
    run("Створення ZIP",()->{
      Uri from=source, to=destination;
+     // Full SAF tree preflight catches nested destinations even with opaque document IDs.
+     // Run before creating any output so a source tree can never archive itself.
+     FileOps.preflight(getContentResolver(),FileOps.root(from),FileOps.root(to));
      Uri target=FileOps.root(to);
      String base="TriMind_ECU_Backup_"+new SimpleDateFormat("yyyyMMdd_HHmmss",Locale.US).format(new Date());
      String name=FileOps.uniqueName(getContentResolver(),target,base,".zip");
