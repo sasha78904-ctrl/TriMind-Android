@@ -181,6 +181,7 @@ final class FileOps {
          throw new IllegalStateException("SHA-256 перевірка не пройдена для "+item.name+
            "; новий файл може бути неповним, оригінал не змінено.",e);
        }
+       present.put(item.name,new Item(created,item.name,item.mime,item.size));
        stats.files++;
        if(stats.files%25==0)progress.update("Скопійовано "+stats.files);
      }
