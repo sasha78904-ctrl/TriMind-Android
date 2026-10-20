@@ -1,0 +1,14 @@
+<!doctype html><html lang="uk"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>TriMind ECU TEST</title>
+<style>body{background:#101927;color:#eef4ff;font:16px system-ui;padding:18px;margin:0}main{max-width:700px;margin:auto}h1{font-size:25px}label{display:block;margin:20px 0}input{display:block;margin-top:8px;width:100%}button{background:#62b1ff;border:0;border-radius:10px;padding:14px;font-weight:700}pre{background:#202d3e;padding:15px;white-space:pre-wrap;word-break:break-word;border-radius:10px}small{color:#aebed0}</style>
+<main><h1>TriMind ECU · Android TEST</h1><p>Локальний аналіз BIN/ORI/MOD. Без інтернету і без редагування прошивок.</p>
+<label>Оригінал BIN/ORI<input id="ori" type="file"></label><label>Модифікація MOD (необов'язково)<input id="mod" type="file"></label><label>A2L (необов'язково)<input id="a2l" type="file"></label>
+<button id="run">Проаналізувати</button><p id="status"></p><pre id="out">Вибери файл прошивки.</pre>
+<small>Евристика не підтверджує карти чи DTC OFF. A2L використовується лише для попереднього підрахунку описів.</small></main>
+<script>
+const $=x=>document.getElementById(x);
+async function bytes(id){let f=$(id).files[0];if(!f)return null;if(f.size>32*1024*1024)throw Error('Ліміт одного файлу 32 МіБ');return new Uint8Array(await f.arrayBuffer());}
+function spans(a,b){let n=Math.min(a.length,b.length),s=[],start=-1,changed=0;for(let i=0;i<n;i++){if(a[i]!==b[i]){changed++;if(start<0)start=i;}else if(start>=0){s.push([start,i-1]);start=-1;}}if(start>=0)s.push([start,n-1]);return {changed,regions:s.length,firstRegions:s.slice(0,100),lengthDifference:b.length-a.length};}
+$('run').onclick=async()=>{try{$('status').textContent='Обробка...';let a=await bytes('ori');if(!a)throw Error('Оберіть BIN/ORI');let b=await bytes('mod');let c=await bytes('a2l');let report={app:'TriMind ECU Android TEST 0.5',original:{name:$('ori').files[0].name,bytes:a.length},comparison:b?spans(a,b):null,a2l:null};
+if(c){let t=new TextDecoder('utf-8',{fatal:false}).decode(c);report.a2l={bytes:c.length,characteristics:(t.match(/\/begin\s+CHARACTERISTIC\b/gi)||[]).length,recordLayouts:(t.match(/\/begin\s+RECORD_LAYOUT\b/gi)||[]).length,notice:'Counts only; address translation, dimensions and calibration not validated'};}
+$('out').textContent=JSON.stringify(report,null,2);$('status').textContent='Готово · аналіз тільки на телефоні';}catch(e){$('status').textContent='Помилка';$('out').textContent=String(e);}};
+</script></html>
