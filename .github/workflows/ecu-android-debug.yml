@@ -1,0 +1,24 @@
+name: TriMind ECU Android debug APK
+on:
+  push:
+    branches: [feature/ecu-map-lab-v03]
+    paths: ['ecuapp/**', 'settings.gradle', '.github/workflows/ecu-android-debug.yml']
+  workflow_dispatch:
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v3
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.10.2'
+      - run: gradle :ecuapp:assembleDebug --stacktrace
+      - uses: actions/upload-artifact@v4
+        with:
+          name: TriMind-ECU-Android-TEST-APK
+          path: ecuapp/build/outputs/apk/debug/ecuapp-debug.apk
