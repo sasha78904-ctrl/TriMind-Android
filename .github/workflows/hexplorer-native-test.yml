@@ -21,7 +21,7 @@ jobs:
         run: |
           set -o pipefail
           sudo apt-get update -qq
-          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq             cmake ninja-build g++ qt6-base-dev qt6-base-dev-tools             2>&1 | tee qt_install.log
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq             cmake ninja-build g++ qt6-base-dev qt6-base-dev-tools libgl1-mesa-dev libglu1-mesa-dev libegl1-mesa-dev libglvnd-dev             2>&1 | tee qt_install.log
       - name: Checkout original HEXplorer, selected source paths only
         shell: bash
         run: |
