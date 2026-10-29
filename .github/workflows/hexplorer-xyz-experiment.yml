@@ -1,0 +1,63 @@
+name: TriMind HEXplorer XYZ experimental reader
+on:
+  push:
+    branches:
+      - research/hexplorer-shadow-20261029
+    paths:
+      - 'research/ecu_hexplorer_shadow/native_xyz/**'
+      - '.github/workflows/hexplorer-xyz-experiment.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  test-native-xyz:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout experimental branch
+        uses: actions/checkout@v4
+      - name: Build C++ adapted XYZ reader
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd research/ecu_hexplorer_shadow/native_xyz
+          g++ -std=c++17 -O2 -Wall -Wextra -Wpedantic hexplorer_xyz.cpp -o hexplorer_xyz
+          sha256sum hexplorer_xyz > SHA256SUMS.txt
+      - name: Run synthetic safety regressions
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd research/ecu_hexplorer_shadow/native_xyz
+          python3 test_native_xyz.py 2>&1 | tee XYZ_REGRESSION.log
+      - name: Archive compiled ELF and source
+        uses: actions/upload-artifact@v4
+        with:
+          name: trimind-hexplorer-adapted-xyz-linux
+          path: |
+            research/ecu_hexplorer_shadow/native_xyz/hexplorer_xyz
+            research/ecu_hexplorer_shadow/native_xyz/SHA256SUMS.txt
+            research/ecu_hexplorer_shadow/native_xyz/XYZ_REGRESSION.log
+          retention-days: 14
+      - name: Save real CI status to branch for ChatGPT access
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          dir=research/ecu_hexplorer_shadow/build_status
+          mkdir -p "$dir"
+          {
+            echo "source=${GITHUB_SHA}"
+            echo "run=https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+            if [ -f research/ecu_hexplorer_shadow/native_xyz/XYZ_REGRESSION.log ]; then
+              cat research/ecu_hexplorer_shadow/native_xyz/XYZ_REGRESSION.log
+            else
+              echo "No completed regression log"
+            fi
+          } > "$dir/latest_xyz_ci.txt"
+          git config user.name "TriMind research CI"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "$dir/latest_xyz_ci.txt"
+          if ! git diff --cached --quiet; then
+            git commit -m "research: record adapted XYZ build and test"
+            git push origin HEAD:research/hexplorer-shadow-20261029
+          fi
