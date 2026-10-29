@@ -15,8 +15,8 @@
 -- Found WrapOpenGL: TRUE
 -- Could NOT find XKB (missing: XKB_LIBRARY XKB_INCLUDE_DIR) (Required is at least version "0.5.0")
 -- Could NOT find WrapVulkanHeaders (missing: Vulkan_INCLUDE_DIR) 
--- Configuring done (0.8s)
--- Generating done (0.1s)
+-- Configuring done (0.7s)
+-- Generating done (0.2s)
 -- Build files have been written to: /tmp/hexplorer-build
 + cmake --build /tmp/hexplorer-build --parallel 2
 [0/2] Re-checking globbed directories...
@@ -28,13 +28,102 @@
 [6/105] Building CXX object CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Nodes/a2lfile.cpp.o
 [7/105] Building CXX object CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/a2lgrammar.cpp.o
 [8/105] Building CXX object CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Nodes/a2ml.cpp.o
-[9/105] Building CXX object CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Nodes/annotation_text.cpp.o
-FAILED: [code=1] CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Nodes/annotation_text.cpp.o 
-/usr/bin/c++ -DQT_CONCURRENT_LIB -DQT_CORE_LIB -DQT_GUI_LIB -DQT_NETWORK_LIB -DQT_NO_DEBUG -DQT_SQL_LIB -DQT_WIDGETS_LIB -DQT_XML_LIB -I/tmp/hexplorer-build/hexplorer_a2l_cli_autogen/include -I/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src -I/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2 -I/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Items -I/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Nodes -I/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/DataContainers -I/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/DataModels -I/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/WidgetsViews -I/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ui_forms -isystem /usr/include/x86_64-linux-gnu/qt6/QtCore -isystem /usr/include/x86_64-linux-gnu/qt6 -isystem /usr/lib/x86_64-linux-gnu/qt6/mkspecs/linux-g++ -isystem /usr/include/x86_64-linux-gnu/qt6/QtGui -isystem /usr/include/x86_64-linux-gnu/qt6/QtWidgets -isystem /usr/include/x86_64-linux-gnu/qt6/QtXml -isystem /usr/include/x86_64-linux-gnu/qt6/QtSql -isystem /usr/include/x86_64-linux-gnu/qt6/QtConcurrent -isystem /usr/include/x86_64-linux-gnu/qt6/QtNetwork -O3 -DNDEBUG -std=gnu++17 -fPIC -MD -MT CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Nodes/annotation_text.cpp.o -MF CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Nodes/annotation_text.cpp.o.d -o CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Nodes/annotation_text.cpp.o -c /home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Nodes/annotation_text.cpp
-/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Nodes/annotation_text.cpp: In member function ‘TokenTyp ANNOTATION_TEXT::parseListString()’:
-/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Nodes/annotation_text.cpp:222:5: error: ‘strcpy_s’ was not declared in this scope; did you mean ‘strcpy’?
-  222 |     strcpy_s(c, str.length()+1, str.toLocal8Bit().data());
-      |     ^~~~~~~~
-      |     strcpy
-[10/105] Building CXX object CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Nodes/annotation.cpp.o
-ninja: build stopped: subcommand failed.
+[9/105] Building CXX object CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Nodes/annotation.cpp.o
+[10/105] Building CXX object CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Nodes/annotation_text.cpp.o
+[11/105] Building CXX object CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Nodes/axis_descr.cpp.o
+[12/105] Building CXX object CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Nodes/axis_pts.cpp.o
+[13/105] Building CXX object CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Nodes/calibration_handle.cpp.o
+[14/105] Building CXX object CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Nodes/calibration_method.cpp.o
+[15/105] Building CXX object CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Nodes/characteristic.cpp.o
+[16/105] Building CXX object CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Nodes/compu_method.cpp.o
+[17/105] Building CXX object CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Nodes/compu_tab.cpp.o
+[18/105] Building CXX object CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Nodes/compu_vtab.cpp.o
+[19/105] Building CXX object CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Nodes/dbfile.cpp.o
+[20/105] Building CXX object CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Nodes/compu_vtab_range.cpp.o
+[21/105] Building CXX object CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Nodes/def_characteristic.cpp.o
+[22/105] Building CXX object CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Nodes/fix_axis_par_list.cpp.o
+[23/105] Building CXX object CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Nodes/formula.cpp.o
+[24/105] Building CXX object CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Nodes/function.cpp.o
+[25/105] Building CXX object CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Nodes/function_list.cpp.o
+[26/105] Building CXX object CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Nodes/group.cpp.o
+[27/105] Building CXX object CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Nodes/if_data.cpp.o
+[28/105] Building CXX object CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Nodes/header.cpp.o
+[29/105] Building CXX object CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Nodes/in_measurement.cpp.o
+[30/105] Building CXX object CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Nodes/loc_measurement.cpp.o
+[31/105] Building CXX object CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Nodes/memory_layout.cpp.o
+[32/105] Building CXX object CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Nodes/measurement.cpp.o
+[33/105] Building CXX object CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Nodes/memory_segment.cpp.o
+[34/105] Building CXX object CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Nodes/mod_common.cpp.o
+[35/105] Building CXX object CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Nodes/mod_par.cpp.o
+[36/105] Building CXX object CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Nodes/module.cpp.o
+[37/105] Building CXX object CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Nodes/out_measurement.cpp.o
+[38/105] Building CXX object CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Nodes/project.cpp.o
+[39/105] Building CXX object CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Nodes/record_layout.cpp.o
+[40/105] Building CXX object CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Nodes/ref_characteristic.cpp.o
+[41/105] Building CXX object CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Nodes/ref_measurement.cpp.o
+[42/105] Building CXX object CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Nodes/sub_function.cpp.o
+[43/105] Building CXX object CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Nodes/sub_group.cpp.o
+[44/105] Building CXX object CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Nodes/unit.cpp.o
+[45/105] Building CXX object CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Items/addr_epk.cpp.o
+[46/105] Building CXX object CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Items/alignment_byte.cpp.o
+[47/105] Building CXX object CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Items/alignment_float32_ieee.cpp.o
+[48/105] Building CXX object CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Items/alignment_float64_ieee.cpp.o
+[49/105] Building CXX object CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Items/alignment_long.cpp.o
+[50/105] Building CXX object CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Items/alignment_word.cpp.o
+[51/105] Building CXX object CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Items/annotation_label.cpp.o
+[52/105] Building CXX object CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Items/annotation_origin.cpp.o
+[53/105] Building CXX object CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Items/array_size.cpp.o
+[54/105] Building CXX object CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Items/axis_pts_ref.cpp.o
+[55/105] Building CXX object CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Items/axis_pts_x.cpp.o
+[56/105] Building CXX object CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Items/axis_pts_y.cpp.o
+[57/105] Building CXX object CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Items/bit_mask.cpp.o
+[58/105] Building CXX object CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Items/byte_order.cpp.o
+[59/105] Building CXX object CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Items/calibration_handle_text.cpp.o
+[60/105] Building CXX object CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Items/coeffs.cpp.o
+[61/105] Building CXX object CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Items/coeffs_linear.cpp.o
+[62/105] Building CXX object CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Items/compu_tab_ref.cpp.o
+[63/105] Building CXX object CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Items/cpu_type.cpp.o
+[64/105] Building CXX object CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Items/customer.cpp.o
+[65/105] Building CXX object CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Items/customer_no.cpp.o
+[66/105] Building CXX object CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Items/data_size.cpp.o
+[67/105] Building CXX object CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Items/default_value.cpp.o
+[68/105] Building CXX object CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Items/default_value_numeric.cpp.o
+[69/105] Building CXX object CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Items/deposit.cpp.o
+[70/105] Building CXX object CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Items/display_identifier.cpp.o
+[71/105] Building CXX object CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Items/ecu.cpp.o
+[72/105] Building CXX object CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Items/ecu_address.cpp.o
+[73/105] Building CXX object CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Items/ecu_address_extension.cpp.o
+[74/105] Building CXX object CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Items/epk.cpp.o
+[75/105] Building CXX object CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Items/extended_limits.cpp.o
+[76/105] Building CXX object CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Items/fix_axis_par.cpp.o
+[77/105] Building CXX object CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Items/fix_axis_par_dist.cpp.o
+[78/105] Building CXX object CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Items/fnc_values.cpp.o
+[79/105] Building CXX object CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Items/format.cpp.o
+[80/105] Building CXX object CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Items/formula_inv.cpp.o
+[81/105] Building CXX object CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Items/function_version.cpp.o
+[82/105] Building CXX object CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Items/item.cpp.o
+[83/105] Building CXX object CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Items/matrix_dim.cpp.o
+[84/105] Building CXX object CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Items/max_refresh.cpp.o
+[85/105] Building CXX object CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Items/no_axis_pts_x.cpp.o
+[86/105] Building CXX object CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Items/no_axis_pts_y.cpp.o
+[87/105] Building CXX object CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Items/number.cpp.o
+[88/105] Building CXX object CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Items/phone_no.cpp.o
+[89/105] Building CXX object CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Items/project_no.cpp.o
+[90/105] Building CXX object CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Items/read_only.cpp.o
+[91/105] Building CXX object CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Items/ref_unit.cpp.o
+[92/105] Building CXX object CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Items/root.cpp.o
+[93/105] Building CXX object CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Items/s_rec_layout.cpp.o
+[94/105] Building CXX object CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Items/si_exponents.cpp.o
+[95/105] Building CXX object CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Items/src_addr_x.cpp.o
+[96/105] Building CXX object CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Items/src_addr_y.cpp.o
+[97/105] Building CXX object CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Items/static_record_layout.cpp.o
+[98/105] Building CXX object CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Items/status_string_ref.cpp.o
+[99/105] Building CXX object CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Items/supplier.cpp.o
+[100/105] Building CXX object CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Items/system_constant.cpp.o
+[101/105] Building CXX object CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Items/unit_conversion.cpp.o
+[102/105] Building CXX object CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Items/user.cpp.o
+[103/105] Building CXX object CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Items/version.cpp.o
+[104/105] Linking CXX executable hexplorer_a2l_cli
++ mkdir -p dist
++ cp /tmp/hexplorer-build/hexplorer_a2l_cli dist/
++ sha256sum dist/hexplorer_a2l_cli
