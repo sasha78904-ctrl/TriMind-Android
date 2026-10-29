@@ -12,7 +12,7 @@ file(GLOB SOURCE_ITEMS CONFIGURE_DEPENDS "${HEXPLORER_DIR}/src/ASAP2/Items/*.cpp
 add_executable(hexplorer_a2l_cli
  hexplorer_a2l_cli.cpp
  "${HEXPLORER_DIR}/src/ASAP2/node.cpp"
- "${HEXPLORER_DIR}/src/ASAP2/item.cpp"
+ "${HEXPLORER_DIR}/src/ASAP2/Items/item.cpp"
  "${HEXPLORER_DIR}/src/ASAP2/lexer.cpp"
  "${HEXPLORER_DIR}/src/ASAP2/a2lgrammar.cpp"
  ${SOURCE_NODES} ${SOURCE_ITEMS})
