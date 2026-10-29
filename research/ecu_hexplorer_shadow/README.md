@@ -8,9 +8,10 @@ ECU archives, and verified map registries remain untouched.
 
 - **External source**: https://github.com/adhoc2/HEXplorer at `c67a73f2fd1b43a999012c95a04181c6d52e51aa`
   (Qt5 reference: `adhoc2/HEXplorer_qt5`, `69aa3382e3f679f27c7a8ba69414748c5c74dbbb`).
-- **No third-party source files were copied** into TriMind. The upstream repository
-  lacks an obvious explicit LICENSE file; author permission/licensing must be
-  established before redistributing or adapting its C++ source.
+- **Eight upstream GPL-3.0-or-later source files have now been copied unchanged** to
+  `vendor/HEXplorer/src/` (hexfile, data, a2l, lexer; CPP and headers). The
+  author labels these GPLv3-or-later in source headers. Treat this research
+  subtree as GPL-covered; review obligations before product integration.
 - Current files implement **shadow comparison policy**, **not** native HEXplorer execution.
   The future HEXplorer adapter must provide an independent, provenance-rich JSON
   result. Synthetic peer results are only software tests.
@@ -60,3 +61,40 @@ HEXplorer-vs-TriMind benchmark.
 4. Run differential validation on MED9.1, EDC16, MS42, Porsche, mismatched EPK,
    missing bytes, invalid checksums, and absent axis count.
 5. Keep `main` unchanged until independent holdout tests and a reviewed change proposal.
+
+## Simple practical test on user ECU file (2026-10-29)
+
+The **copied original files** are in `vendor/HEXplorer/src`. The tested
+`hexplorer_raw_probe.cpp` is a **small STL-only C++ adaptation** of the raw-value
+algorithm documented in upstream `HexFile::getDecValues`, not a Qt binary
+or a standalone HEXplorer A2L parser.
+
+Tested locally on Mercedes `mers nov` (SHA-256
+`7a5f38048e4454e9ada5798f7584bf2167e5d823b54722ae8934a4632648879c`),
+using `edc16_13.a2l` as **unmatched** A2L and `0x800000` **hypothetical** base.
+The A2L record schemas were exported with TriMind's existing parser, **so
+independent A2L parsing has not yet been verified**.
+
+- TriMind v0.5: 2 structurally possible candidates / 145; 0 verified maps.
+- Standalone C++ raw reader: 3 raw readings / 145; 0 verified maps.
+- Shared 2 candidate axes and Z matched exactly.
+- Additional `PCR_pDvtMin_MAP` (9x8) has nonmonotonic X/Y; TriMind
+  rejects with `non_monotonic_axes`.
+- Test package and full result: user-private Google Drive
+  `TriMind_ECU/REPORTS/TriMind_HEXplorer_Copied_Code_mers_nov_Test_20261029.zip`.
+
+Run the small C++ reader (with user-owned inputs extracted locally):
+
+```sh
+g++ -std=c++17 -O2 -Wall -Wextra -pedantic hexplorer_raw_probe.cpp -o hexplorer_raw_probe
+./hexplorer_raw_probe mers_nov.bin mapspec.tsv raw_results.tsv
+```
+
+Do not upload user BIN or private A2L files to the public repository.
+
+## Licensing notice
+
+The copied HEXplorer sources remain under copyright Christophe Hoel, licensed
+GPL version 3 or any later version per their source headers. See
+https://www.gnu.org/licenses/gpl-3.0.html ; no proprietary code migration
+or merge into Android `main` is authorized by this experiment.
