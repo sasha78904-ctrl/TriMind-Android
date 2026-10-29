@@ -1,0 +1,39 @@
+name: Build HEXplorer native A2L test CLI
+on:
+  push:
+    branches:
+      - research/hexplorer-shadow-20261029
+    paths:
+      - 'research/ecu_hexplorer_shadow/native/**'
+      - '.github/workflows/hexplorer-native-test.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+    steps:
+      - name: Checkout TriMind experiment
+        uses: actions/checkout@v4
+      - name: Install Qt5 headers and compiler
+        run: |
+          sudo apt-get update -qq
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq cmake ninja-build g++ qtbase5-dev
+      - name: Get original HEXplorer source at pinned revision
+        run: |
+          git clone --filter=blob:none https://github.com/adhoc2/HEXplorer.git upstream_hexplorer
+          git -C upstream_hexplorer checkout c67a73f2fd1b43a999012c95a04181c6d52e51aa
+      - name: Build native parser CLI from original C++ classes
+        run: |
+          cmake -S research/ecu_hexplorer_shadow/native -B /tmp/hexplorer-build -G Ninja -DCMAKE_BUILD_TYPE=Release -DHEXPLORER_DIR="$GITHUB_WORKSPACE/upstream_hexplorer"
+          cmake --build /tmp/hexplorer-build --parallel 2
+          mkdir -p dist
+          cp /tmp/hexplorer-build/hexplorer_a2l_cli dist/
+          sha256sum dist/hexplorer_a2l_cli | tee dist/SHA256SUMS.txt
+      - name: Upload binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: hexplorer-a2l-cli-linux
+          path: dist/
+          retention-days: 14
