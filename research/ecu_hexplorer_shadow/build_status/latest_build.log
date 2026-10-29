@@ -1,0 +1,86 @@
++ cmake -S research/ecu_hexplorer_shadow/native -B /tmp/hexplorer-build -G Ninja -DCMAKE_BUILD_TYPE=Release -DHEXPLORER_DIR=/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer
+-- The CXX compiler identification is GNU 11.4.0
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: /usr/bin/c++ - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success
+-- Found Threads: TRUE
+-- Performing Test HAVE_STDATOMIC
+-- Performing Test HAVE_STDATOMIC - Success
+-- Found WrapAtomic: TRUE
+-- Could NOT find OpenGL (missing: OPENGL_INCLUDE_DIR) 
+-- Could NOT find WrapOpenGL (missing: WrapOpenGL_FOUND) 
+CMake Warning at /usr/lib/x86_64-linux-gnu/cmake/Qt6/Qt6Config.cmake:219 (find_package):
+  Found package configuration file:
+
+    /usr/lib/x86_64-linux-gnu/cmake/Qt6Gui/Qt6GuiConfig.cmake
+
+  but it set Qt6Gui_FOUND to FALSE so package "Qt6Gui" is considered to be
+  NOT FOUND.  Reason given by package:
+
+  Qt6Gui could not be found because dependency WrapOpenGL could not be found.
+
+Call Stack (most recent call first):
+  CMakeLists.txt:7 (find_package)
+
+
+-- Could NOT find OpenGL (missing: OPENGL_INCLUDE_DIR) 
+-- Could NOT find WrapOpenGL (missing: WrapOpenGL_FOUND) 
+CMake Warning at /usr/local/share/cmake-3.31/Modules/CMakeFindDependencyMacro.cmake:76 (find_package):
+  Found package configuration file:
+
+    /usr/lib/x86_64-linux-gnu/cmake/Qt6Gui/Qt6GuiConfig.cmake
+
+  but it set Qt6Gui_FOUND to FALSE so package "Qt6Gui" is considered to be
+  NOT FOUND.  Reason given by package:
+
+  Qt6Gui could not be found because dependency WrapOpenGL could not be found.
+
+Call Stack (most recent call first):
+  /usr/lib/x86_64-linux-gnu/cmake/Qt6/QtPublicDependencyHelpers.cmake:14 (find_dependency)
+  /usr/lib/x86_64-linux-gnu/cmake/Qt6Widgets/Qt6WidgetsDependencies.cmake:96 (_qt_internal_find_dependencies)
+  /usr/lib/x86_64-linux-gnu/cmake/Qt6Widgets/Qt6WidgetsConfig.cmake:50 (include)
+  /usr/lib/x86_64-linux-gnu/cmake/Qt6/Qt6Config.cmake:219 (find_package)
+  CMakeLists.txt:7 (find_package)
+
+
+CMake Warning at /usr/lib/x86_64-linux-gnu/cmake/Qt6/Qt6Config.cmake:219 (find_package):
+  Found package configuration file:
+
+    /usr/lib/x86_64-linux-gnu/cmake/Qt6Widgets/Qt6WidgetsConfig.cmake
+
+  but it set Qt6Widgets_FOUND to FALSE so package "Qt6Widgets" is considered
+  to be NOT FOUND.  Reason given by package:
+
+  Qt6Widgets could not be found because dependency Qt6Gui could not be found.
+
+Call Stack (most recent call first):
+  CMakeLists.txt:7 (find_package)
+
+
+CMake Error at CMakeLists.txt:7 (find_package):
+  Found package configuration file:
+
+    /usr/lib/x86_64-linux-gnu/cmake/Qt6/Qt6Config.cmake
+
+  but it set Qt6_FOUND to FALSE so package "Qt6" is considered to be NOT
+  FOUND.  Reason given by package:
+
+  Failed to find Qt component "Gui".
+
+  Expected Config file at
+  "/usr/lib/x86_64-linux-gnu/cmake/Qt6Gui/Qt6GuiConfig.cmake" exists
+
+  Failed to find Qt component "Widgets".
+
+  Expected Config file at
+  "/usr/lib/x86_64-linux-gnu/cmake/Qt6Widgets/Qt6WidgetsConfig.cmake" exists
+
+
+
+
+
+-- Configuring incomplete, errors occurred!
