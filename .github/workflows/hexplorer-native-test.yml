@@ -35,6 +35,17 @@ jobs:
           # A2LFILE CPP's unused WorkProject GUI include imports Qwt/QScintilla UI;
           # CLI removes this include only, preserving original parser implementation.
           sed -i '/#include "WidgetsViews\/workproject.h"/d'             upstream_hexplorer/src/ASAP2/Nodes/a2lfile.cpp
+          # Linux-only portability: the allocated buffer is unused in upstream
+          # parseListString; remove its two statements, keep parser semantics.
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path("upstream_hexplorer/src/ASAP2/Nodes/annotation_text.cpp")
+          content = path.read_text()
+          old = "    char *c = new char[str.length() + 1];\n    strcpy_s(c, str.length()+1, str.toLocal8Bit().data());"
+          assert content.count(old) == 1, "Upstream annotation_text.cpp changed; stop rather than apply an unsafe patch"
+          path.write_text(content.replace(old, "    // Unused temporary removed for portable Linux compilation."))
+          print("Verified removal of unused Windows-only strcpy_s buffer")
+          PY
       - name: Build and smoke-test native C++ parser
         shell: bash
         run: |
