@@ -1,0 +1,15 @@
+source=b00eeeb2c02489678e8e8a169a5a123f05808ba4
+run=https://github.com/sasha78904-ctrl/TriMind-Android/actions/runs/40958451947
+PASS map correct
+PASS curve correct
+PASS value signed
+PASS array count
+PASS missing memory rejected
+PASS zero axis rejected
+PASS axis max bounded
+PASS explicit blob bounded
+PASS missing number rejected
+PASS non-monotonic axis rejected
+PASS max not actual length
+PASS explicit endian
+TOTAL PASS: 12
