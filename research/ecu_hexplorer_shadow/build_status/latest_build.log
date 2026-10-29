@@ -11,76 +11,30 @@
 -- Performing Test HAVE_STDATOMIC
 -- Performing Test HAVE_STDATOMIC - Success
 -- Found WrapAtomic: TRUE
--- Could NOT find OpenGL (missing: OPENGL_INCLUDE_DIR) 
--- Could NOT find WrapOpenGL (missing: WrapOpenGL_FOUND) 
-CMake Warning at /usr/lib/x86_64-linux-gnu/cmake/Qt6/Qt6Config.cmake:219 (find_package):
-  Found package configuration file:
-
-    /usr/lib/x86_64-linux-gnu/cmake/Qt6Gui/Qt6GuiConfig.cmake
-
-  but it set Qt6Gui_FOUND to FALSE so package "Qt6Gui" is considered to be
-  NOT FOUND.  Reason given by package:
-
-  Qt6Gui could not be found because dependency WrapOpenGL could not be found.
-
-Call Stack (most recent call first):
-  CMakeLists.txt:7 (find_package)
-
-
--- Could NOT find OpenGL (missing: OPENGL_INCLUDE_DIR) 
--- Could NOT find WrapOpenGL (missing: WrapOpenGL_FOUND) 
-CMake Warning at /usr/local/share/cmake-3.31/Modules/CMakeFindDependencyMacro.cmake:76 (find_package):
-  Found package configuration file:
-
-    /usr/lib/x86_64-linux-gnu/cmake/Qt6Gui/Qt6GuiConfig.cmake
-
-  but it set Qt6Gui_FOUND to FALSE so package "Qt6Gui" is considered to be
-  NOT FOUND.  Reason given by package:
-
-  Qt6Gui could not be found because dependency WrapOpenGL could not be found.
-
-Call Stack (most recent call first):
-  /usr/lib/x86_64-linux-gnu/cmake/Qt6/QtPublicDependencyHelpers.cmake:14 (find_dependency)
-  /usr/lib/x86_64-linux-gnu/cmake/Qt6Widgets/Qt6WidgetsDependencies.cmake:96 (_qt_internal_find_dependencies)
-  /usr/lib/x86_64-linux-gnu/cmake/Qt6Widgets/Qt6WidgetsConfig.cmake:50 (include)
-  /usr/lib/x86_64-linux-gnu/cmake/Qt6/Qt6Config.cmake:219 (find_package)
-  CMakeLists.txt:7 (find_package)
-
-
-CMake Warning at /usr/lib/x86_64-linux-gnu/cmake/Qt6/Qt6Config.cmake:219 (find_package):
-  Found package configuration file:
-
-    /usr/lib/x86_64-linux-gnu/cmake/Qt6Widgets/Qt6WidgetsConfig.cmake
-
-  but it set Qt6Widgets_FOUND to FALSE so package "Qt6Widgets" is considered
-  to be NOT FOUND.  Reason given by package:
-
-  Qt6Widgets could not be found because dependency Qt6Gui could not be found.
-
-Call Stack (most recent call first):
-  CMakeLists.txt:7 (find_package)
-
-
-CMake Error at CMakeLists.txt:7 (find_package):
-  Found package configuration file:
-
-    /usr/lib/x86_64-linux-gnu/cmake/Qt6/Qt6Config.cmake
-
-  but it set Qt6_FOUND to FALSE so package "Qt6" is considered to be NOT
-  FOUND.  Reason given by package:
-
-  Failed to find Qt component "Gui".
-
-  Expected Config file at
-  "/usr/lib/x86_64-linux-gnu/cmake/Qt6Gui/Qt6GuiConfig.cmake" exists
-
-  Failed to find Qt component "Widgets".
-
-  Expected Config file at
-  "/usr/lib/x86_64-linux-gnu/cmake/Qt6Widgets/Qt6WidgetsConfig.cmake" exists
-
-
-
-
-
--- Configuring incomplete, errors occurred!
+-- Found OpenGL: /usr/lib/x86_64-linux-gnu/libOpenGL.so
+-- Found WrapOpenGL: TRUE
+-- Could NOT find XKB (missing: XKB_LIBRARY XKB_INCLUDE_DIR) (Required is at least version "0.5.0")
+-- Could NOT find WrapVulkanHeaders (missing: Vulkan_INCLUDE_DIR) 
+-- Configuring done (0.8s)
+-- Generating done (0.1s)
+-- Build files have been written to: /tmp/hexplorer-build
++ cmake --build /tmp/hexplorer-build --parallel 2
+[0/2] Re-checking globbed directories...
+[1/105] Automatic MOC for target hexplorer_a2l_cli
+[2/105] Building CXX object CMakeFiles/hexplorer_a2l_cli.dir/hexplorer_a2l_cli_autogen/mocs_compilation.cpp.o
+[3/105] Building CXX object CMakeFiles/hexplorer_a2l_cli.dir/hexplorer_a2l_cli.cpp.o
+[4/105] Building CXX object CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/lexer.cpp.o
+[5/105] Building CXX object CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/node.cpp.o
+[6/105] Building CXX object CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Nodes/a2lfile.cpp.o
+[7/105] Building CXX object CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/a2lgrammar.cpp.o
+[8/105] Building CXX object CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Nodes/a2ml.cpp.o
+[9/105] Building CXX object CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Nodes/annotation_text.cpp.o
+FAILED: [code=1] CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Nodes/annotation_text.cpp.o 
+/usr/bin/c++ -DQT_CONCURRENT_LIB -DQT_CORE_LIB -DQT_GUI_LIB -DQT_NETWORK_LIB -DQT_NO_DEBUG -DQT_SQL_LIB -DQT_WIDGETS_LIB -DQT_XML_LIB -I/tmp/hexplorer-build/hexplorer_a2l_cli_autogen/include -I/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src -I/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2 -I/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Items -I/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Nodes -I/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/DataContainers -I/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/DataModels -I/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/WidgetsViews -I/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ui_forms -isystem /usr/include/x86_64-linux-gnu/qt6/QtCore -isystem /usr/include/x86_64-linux-gnu/qt6 -isystem /usr/lib/x86_64-linux-gnu/qt6/mkspecs/linux-g++ -isystem /usr/include/x86_64-linux-gnu/qt6/QtGui -isystem /usr/include/x86_64-linux-gnu/qt6/QtWidgets -isystem /usr/include/x86_64-linux-gnu/qt6/QtXml -isystem /usr/include/x86_64-linux-gnu/qt6/QtSql -isystem /usr/include/x86_64-linux-gnu/qt6/QtConcurrent -isystem /usr/include/x86_64-linux-gnu/qt6/QtNetwork -O3 -DNDEBUG -std=gnu++17 -fPIC -MD -MT CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Nodes/annotation_text.cpp.o -MF CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Nodes/annotation_text.cpp.o.d -o CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Nodes/annotation_text.cpp.o -c /home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Nodes/annotation_text.cpp
+/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Nodes/annotation_text.cpp: In member function ‘TokenTyp ANNOTATION_TEXT::parseListString()’:
+/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Nodes/annotation_text.cpp:222:5: error: ‘strcpy_s’ was not declared in this scope; did you mean ‘strcpy’?
+  222 |     strcpy_s(c, str.length()+1, str.toLocal8Bit().data());
+      |     ^~~~~~~~
+      |     strcpy
+[10/105] Building CXX object CMakeFiles/hexplorer_a2l_cli.dir/home/runner/work/TriMind-Android/TriMind-Android/upstream_hexplorer/src/ASAP2/Nodes/annotation.cpp.o
+ninja: build stopped: subcommand failed.
