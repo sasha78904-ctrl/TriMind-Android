@@ -12,28 +12,65 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-22.04
-    timeout-minutes: 30
+    timeout-minutes: 35
     steps:
-      - name: Checkout TriMind experiment
+      - name: Checkout isolated TriMind branch
         uses: actions/checkout@v4
-      - name: Install Qt5 headers and compiler
+      - name: Install Qt6 development environment
+        shell: bash
         run: |
+          set -o pipefail
           sudo apt-get update -qq
-          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq cmake ninja-build g++ qtbase5-dev
-      - name: Get original HEXplorer source at pinned revision
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq             cmake ninja-build g++ qt6-base-dev qt6-base-dev-tools             2>&1 | tee qt_install.log
+      - name: Checkout original HEXplorer, selected source paths only
+        shell: bash
         run: |
-          git clone --filter=blob:none https://github.com/adhoc2/HEXplorer.git upstream_hexplorer
-          git -C upstream_hexplorer checkout c67a73f2fd1b43a999012c95a04181c6d52e51aa
-      - name: Build native parser CLI from original C++ classes
+          set -euxo pipefail
+          git clone --filter=blob:none --no-checkout https://github.com/adhoc2/HEXplorer.git upstream_hexplorer
+          git -C upstream_hexplorer sparse-checkout set             src/ASAP2 src/DataContainers src/DataModels src/WidgetsViews src/ui_forms
+          git -C upstream_hexplorer fetch --depth 1 origin c67a73f2fd1b43a999012c95a04181c6d52e51aa
+          git -C upstream_hexplorer checkout --detach c67a73f2fd1b43a999012c95a04181c6d52e51aa
+          git -C upstream_hexplorer rev-parse HEAD
+          test -f upstream_hexplorer/src/ASAP2/Nodes/a2lfile.cpp
+          # A2LFILE CPP's unused WorkProject GUI include imports Qwt/QScintilla UI;
+          # CLI removes this include only, preserving original parser implementation.
+          sed -i '/#include "WidgetsViews\/workproject.h"/d'             upstream_hexplorer/src/ASAP2/Nodes/a2lfile.cpp
+      - name: Build and smoke-test native C++ parser
+        shell: bash
         run: |
-          cmake -S research/ecu_hexplorer_shadow/native -B /tmp/hexplorer-build -G Ninja -DCMAKE_BUILD_TYPE=Release -DHEXPLORER_DIR="$GITHUB_WORKSPACE/upstream_hexplorer"
-          cmake --build /tmp/hexplorer-build --parallel 2
-          mkdir -p dist
-          cp /tmp/hexplorer-build/hexplorer_a2l_cli dist/
-          sha256sum dist/hexplorer_a2l_cli | tee dist/SHA256SUMS.txt
-      - name: Upload binary
+          set -euxo pipefail
+          {
+            cmake -S research/ecu_hexplorer_shadow/native               -B /tmp/hexplorer-build -G Ninja               -DCMAKE_BUILD_TYPE=Release               -DHEXPLORER_DIR="$GITHUB_WORKSPACE/upstream_hexplorer"
+            cmake --build /tmp/hexplorer-build --parallel 2
+            mkdir -p dist
+            cp /tmp/hexplorer-build/hexplorer_a2l_cli dist/
+            sha256sum dist/hexplorer_a2l_cli > dist/SHA256SUMS.txt
+          } 2>&1 | tee native_build.log
+          # Invoking without inputs should report usage and return 64.
+          set +e
+          QT_QPA_PLATFORM=offscreen dist/hexplorer_a2l_cli 2>&1 | tee native_smoke.log
+          exit_code=${PIPESTATUS[0]}
+          set -e
+          if [ "$exit_code" -ne 64 ]; then
+            echo "Unexpected native CLI usage exit: $exit_code" >&2
+            exit 1
+          fi
+      - name: Upload build diagnostics even on failure
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hexplorer-native-build-diagnostics
+          path: |
+            qt_install.log
+            native_build.log
+            native_smoke.log
+          if-no-files-found: warn
+          retention-days: 14
+      - name: Upload compiled native CLI only if successful
+        if: success()
         uses: actions/upload-artifact@v4
         with:
           name: hexplorer-a2l-cli-linux
           path: dist/
+          if-no-files-found: error
           retention-days: 14
